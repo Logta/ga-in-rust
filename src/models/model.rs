@@ -14,7 +14,7 @@ pub trait Model: BaseModel {
 }
 
 // トレイトを実装するためだけのデータ型にはUnit構造体が便利
-pub struct Ajent{
+pub struct Ajent {
     id: u64,
     point: u64,
     dna_2_binary_digits: String,
@@ -23,7 +23,6 @@ pub struct Ajent{
 
 // `impl トレイト名 for 型名 {..}`で定義可能
 impl BaseModel for Ajent {
-
     fn get_point(&self) -> u64 {
         self.point
     }
@@ -62,15 +61,14 @@ impl BaseModel for Ajent {
 
 // `impl トレイト名 for 型名 {..}`で定義可能
 impl Model for Ajent {
-
-    fn get_dna_2_binary_digits(&self) -> String{
+    fn get_dna_2_binary_digits(&self) -> String {
         self.dna_2_binary_digits.clone()
     }
 }
 
 pub fn new_base_model(id: u64, dna_2_binary_digits: String) -> Ajent {
     Ajent {
-        id: id,
+        id,
         point: 0,
         dna_2_binary_digits: String::from(dna_2_binary_digits.clone()),
         active: true,
