@@ -1,5 +1,6 @@
 use crate::models::model;
-use super::super::strategies::utils::{StrategyOperation, Strategy};
+use crate::strategies::utils::{StrategyOperation, Strategy};
+use crate::ga::ga::{GA};
 
 use super::model::{Agent, BaseModel, Model};
 use rand::{thread_rng, Rng};
@@ -10,10 +11,11 @@ pub trait GameOperation {
     fn get_mutation_rate(&self) -> f64;
     fn get_population(&self) -> u64;
     fn get_dna_length(&self) -> u64;
-    fn do_game(&self) -> &Self;
+    fn do_game(&mut self) -> GA;
+    fn one_shot_game(&mut self);
 }
 
-// トレイトを実装するためだけのデータ型にはUnit構造体が便利
+#[derive (Clone)]
 pub struct Game{
     agents: Vec<Agent>,
     mutation_rate: f64,
@@ -23,7 +25,6 @@ pub struct Game{
     strategy: Strategy,
 }
 
-// `impl トレイト名 for 型名 {..}`で定義可能
 impl GameOperation for Game {
     fn get_point_list(&self) -> Vec<u64>{
         self.agents.iter().map(|x| x.get_point()).collect()
@@ -45,8 +46,28 @@ impl GameOperation for Game {
         self.dna_length
     }
     
-    fn do_game(&self) -> &Game{
-        self
+    fn do_game(&mut self) -> GA{
+        for _ in 0..self.num_game {
+            self.one_shot_game();
+        }
+
+        let g = self.clone();
+        
+        GA{
+            old_agents: g.agents,
+            mutation_rate: g.mutation_rate,
+            population: g.population,
+        }
+    }
+
+    fn one_shot_game(&mut self){
+        for proponent in 0..self.agents.len(){
+            for opponent in proponent..self.agents.len(){
+                let (pro, opp) = Strategy::get_result(self.agents[proponent].clone(), self.agents[opponent].clone());
+                self.agents[proponent]=pro;
+                self.agents[opponent]=opp;
+            }
+        }
     }
 }
 

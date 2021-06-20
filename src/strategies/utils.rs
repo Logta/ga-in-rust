@@ -1,8 +1,6 @@
 use std::u32;
 
-use crate::models::model;
-
-use super::super::models::model::{Agent, Model, BaseModel};
+use crate::models::model::{Agent, Model, BaseModel};
 
 pub enum Option {
     Cooperation, //協力
@@ -13,15 +11,14 @@ pub trait StrategyOperation {
     fn get_result(agent1: Agent, agent2: Agent) -> (Agent, Agent);
 }
 
+#[derive (Clone)]
 pub struct Strategy{}
 
 impl StrategyOperation for Strategy {
     fn get_result(agent1: Agent, agent2: Agent) -> (Agent, Agent){
-        
         let agent1_choose = match agent1.get_choose() {
             Ok(v) => v,
             Err(_) => 0,
-            _ => 0
         };
 
         let agent2_choose = match agent2.get_choose() {
@@ -49,7 +46,7 @@ fn get_result_point(own_option: &Option, enemy_option: &Option) -> u64{
     }
 }
 
-fn get_option(dna_num: u64, dna_max_num: usize) -> Option{
+pub fn get_option(dna_num: u64, dna_max_num: usize) -> Option{
     let base: u32 = 2; 
     let two_pow:u32 = base.pow(dna_max_num as u32 );
     if dna_num > (two_pow / 2).into() {

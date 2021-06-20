@@ -1,5 +1,5 @@
 use core::num::ParseIntError;
-use rand::{thread_rng, Rng};
+use rand::{Rng};
 
 // `trait トレイト名 {..}`でトレイトを定義
 pub trait BaseModel {
@@ -15,6 +15,7 @@ pub trait Model: BaseModel {
 }
 
 // トレイトを実装するためだけのデータ型にはUnit構造体が便利
+#[derive (Clone)]
 pub struct Agent {
     id: u64,
     point: u64,
@@ -34,7 +35,7 @@ impl BaseModel for Agent {
     }
 
     fn set_new_point(&self, point: u64) -> Agent {
-        let m: &Agent = self.clone();
+        let m: Agent = self.clone();
         Agent {
             point,
             id: m.id,
@@ -44,7 +45,7 @@ impl BaseModel for Agent {
     }
 
     fn crossover(&self, _other: &Agent, _crossing_point: usize) -> Agent {
-        let m: &Agent = self.clone();
+        let m: Agent = self.clone();
         let head = self.dna_2_binary_digits.chars().take(_crossing_point).collect::<String>();
         let tail = _other.dna_2_binary_digits.chars().skip(_crossing_point).collect::<String>();
 
@@ -58,7 +59,7 @@ impl BaseModel for Agent {
     }
 
     fn mutation(&self, mutation_rate: f64) -> Agent {
-        let m: &Agent = self.clone();
+        let m: Agent = self.clone();
         let vec_dna: Vec<char> = m.dna_2_binary_digits.chars().collect();
         let new_dna: String = vec_dna.into_iter().map(|x| mutation_2_one_factor(x, mutation_rate)).collect();
         Agent {
