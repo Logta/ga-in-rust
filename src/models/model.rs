@@ -1,9 +1,10 @@
 use core::num::ParseIntError;
+use rand::{thread_rng, Rng};
 
 // `trait トレイト名 {..}`でトレイトを定義
 pub trait BaseModel {
-    fn mutation(&self) -> Self;
-    fn crossover(&self, other: &Self, crossing_point: u32) -> &Self;
+    fn mutation(&self, mutation_rate: f64) -> Self;
+    fn crossover(&self, other: &Self, crossing_point: usize) -> Self;
     fn set_new_point(&self, point: u64) -> Self;
     fn get_choose(&self) -> Result<u32, ParseIntError>;
     fn get_point(&self) -> u64;
@@ -42,14 +43,24 @@ impl BaseModel for Ajent {
         }
     }
 
-    fn crossover(&self, _other: &Ajent, _crossing_point: u32) -> &Ajent {
-        return self
+    fn crossover(&self, _other: &Ajent, _crossing_point: usize) -> Ajent {
+        let m: &Ajent = self.clone();
+        let head = self.dna_2_binary_digits.chars().take(_crossing_point).collect::<String>();
+        let tail = _other.dna_2_binary_digits.chars().skip(_crossing_point).collect::<String>();
+
+        let new_dna: String = head + &tail;
+        Ajent {
+            id: m.id,
+            point: 0,
+            dna_2_binary_digits: new_dna,
+            active: true,
+        }
     }
 
-    fn mutation(&self) -> Ajent {
+    fn mutation(&self, mutation_rate: f64) -> Ajent {
         let m: &Ajent = self.clone();
         let vec_dna: Vec<char> = m.dna_2_binary_digits.chars().collect();
-        let new_dna: String = vec_dna.into_iter().map(|x| mutation_2_one_factor(x)).collect();
+        let new_dna: String = vec_dna.into_iter().map(|x| mutation_2_one_factor(x, mutation_rate)).collect();
         Ajent {
             id: m.id,
             point: 0,
@@ -75,10 +86,33 @@ pub fn new_base_model(id: u64, dna_2_binary_digits: String) -> Ajent {
     }
 }
 
-fn mutation_2_one_factor(c: char) -> char {
-    match c {
-        '1' => '0',
-        '0' => '1',
-        _ => '0',
+fn mutation_2_one_factor(c: char, mutation_rate: f64) -> char {
+    
+    let mut rng = rand::thread_rng();
+    let probability: f64 = rng.gen();
+    
+    // c => 元のdna因子、
+    // probability < mutation_rate => true  : 突然変異する、因子を反転させる
+    //                                false : 突然変異しない
+    match (c, probability < mutation_rate) {
+        ('1', true) => '0',
+        ('0', true) => '1',
+        _ => c,
     }
+}
+
+#[test]
+fn dna_operation_test(){
+    
+    let mut m1 = new_base_model(1,"11110000".to_string());
+    let mut m2 = new_base_model(1,"00001111".to_string());
+    assert_eq!("11110000", m1.get_dna_2_binary_digits());
+    assert_eq!("00001111", m2.get_dna_2_binary_digits());
+    
+    m2 = m1.crossover(&m2, 4);
+    assert_eq!("11111111", m2.get_dna_2_binary_digits());
+
+    m1 = m1.mutation(0.2);
+    assert_eq!(8, m1.get_dna_2_binary_digits().len());
+
 }
