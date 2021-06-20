@@ -1,6 +1,7 @@
 use crate::models::model;
+use super::super::strategies::utils::{StrategyOperation, Strategy};
 
-use super::model::{Ajent, BaseModel, Model};
+use super::model::{Agent, BaseModel, Model};
 use rand::{thread_rng, Rng};
 
 pub trait GameOperation {
@@ -9,14 +10,17 @@ pub trait GameOperation {
     fn get_mutation_rate(&self) -> f64;
     fn get_population(&self) -> u64;
     fn get_dna_length(&self) -> u64;
+    fn do_game(&self) -> &Self;
 }
 
 // トレイトを実装するためだけのデータ型にはUnit構造体が便利
 pub struct Game{
-    agents: Vec<Ajent>,
+    agents: Vec<Agent>,
     mutation_rate: f64,
     population: u64,
     dna_length: u64,
+    num_game: u64, // １世代でのゲーム回数
+    strategy: Strategy,
 }
 
 // `impl トレイト名 for 型名 {..}`で定義可能
@@ -40,9 +44,13 @@ impl GameOperation for Game {
     fn get_dna_length(&self) -> u64{
         self.dna_length
     }
+    
+    fn do_game(&self) -> &Game{
+        self
+    }
 }
 
-pub fn new_game(population: u64, mutation_rate: f64, dna_length: u64) -> Game {
+pub fn new_game(population: u64, mutation_rate: f64,num_game:u64, dna_length: u64) -> Game {
     let agents = (0..population).map(|x| model::new_base_model(x,get_dna(dna_length as u32))).collect();
 
     Game {
@@ -50,6 +58,8 @@ pub fn new_game(population: u64, mutation_rate: f64, dna_length: u64) -> Game {
         mutation_rate,
         agents,
         dna_length,
+        num_game,
+        strategy: Strategy{}
     }
 }
 
@@ -63,9 +73,10 @@ fn get_dna(num: u32) -> String {
     format!("{:0>1$b}", n, num as usize)
 }
 
+
 #[test]
 fn game(){
-    let g = new_game(10, 0.1, 6);
+    let g = new_game(10, 0.1, 6, 6);
     for dna in g.get_dna_list().iter(){
         println!("{}", dna);
         assert_eq!(6, dna.len());

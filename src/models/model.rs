@@ -15,7 +15,7 @@ pub trait Model: BaseModel {
 }
 
 // トレイトを実装するためだけのデータ型にはUnit構造体が便利
-pub struct Ajent {
+pub struct Agent {
     id: u64,
     point: u64,
     dna_2_binary_digits: String,
@@ -23,7 +23,7 @@ pub struct Ajent {
 }
 
 // `impl トレイト名 for 型名 {..}`で定義可能
-impl BaseModel for Ajent {
+impl BaseModel for Agent {
     fn get_point(&self) -> u64 {
         self.point
     }
@@ -33,9 +33,9 @@ impl BaseModel for Ajent {
         return Ok(r)
     }
 
-    fn set_new_point(&self, point: u64) -> Ajent {
-        let m: &Ajent = self.clone();
-        Ajent {
+    fn set_new_point(&self, point: u64) -> Agent {
+        let m: &Agent = self.clone();
+        Agent {
             point,
             id: m.id,
             dna_2_binary_digits: String::from(&m.dna_2_binary_digits),
@@ -43,13 +43,13 @@ impl BaseModel for Ajent {
         }
     }
 
-    fn crossover(&self, _other: &Ajent, _crossing_point: usize) -> Ajent {
-        let m: &Ajent = self.clone();
+    fn crossover(&self, _other: &Agent, _crossing_point: usize) -> Agent {
+        let m: &Agent = self.clone();
         let head = self.dna_2_binary_digits.chars().take(_crossing_point).collect::<String>();
         let tail = _other.dna_2_binary_digits.chars().skip(_crossing_point).collect::<String>();
 
         let new_dna: String = head + &tail;
-        Ajent {
+        Agent {
             id: m.id,
             point: 0,
             dna_2_binary_digits: new_dna,
@@ -57,11 +57,11 @@ impl BaseModel for Ajent {
         }
     }
 
-    fn mutation(&self, mutation_rate: f64) -> Ajent {
-        let m: &Ajent = self.clone();
+    fn mutation(&self, mutation_rate: f64) -> Agent {
+        let m: &Agent = self.clone();
         let vec_dna: Vec<char> = m.dna_2_binary_digits.chars().collect();
         let new_dna: String = vec_dna.into_iter().map(|x| mutation_2_one_factor(x, mutation_rate)).collect();
-        Ajent {
+        Agent {
             id: m.id,
             point: 0,
             dna_2_binary_digits: new_dna,
@@ -71,14 +71,14 @@ impl BaseModel for Ajent {
 }
 
 // `impl トレイト名 for 型名 {..}`で定義可能
-impl Model for Ajent {
+impl Model for Agent {
     fn get_dna_2_binary_digits(&self) -> String {
         self.dna_2_binary_digits.clone()
     }
 }
 
-pub fn new_base_model(id: u64, dna_2_binary_digits: String) -> Ajent {
-    Ajent {
+pub fn new_base_model(id: u64, dna_2_binary_digits: String) -> Agent {
+    Agent {
         id,
         point: 0,
         dna_2_binary_digits: String::from(dna_2_binary_digits.clone()),
