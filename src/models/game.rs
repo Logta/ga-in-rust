@@ -84,6 +84,17 @@ pub fn new_game(population: u64, mutation_rate: f64,num_game:u64, dna_length: u6
     }
 }
 
+pub fn generate_next_game(population: u64, mutation_rate: f64,num_game:u64, dna_length: u64, agents: Vec<Agent>) -> Game {
+    Game {
+        population,
+        mutation_rate,
+        agents,
+        dna_length,
+        num_game,
+        strategy: Strategy{}
+    }
+}
+
 fn get_dna(num: u32) -> String {
     let base: u32 = 2; 
     let two_pow:u32 = base.pow(num);

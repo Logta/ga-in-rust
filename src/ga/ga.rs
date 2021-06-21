@@ -1,7 +1,8 @@
-use crate::models::model::{BaseModel};
+use crate::models::model::{BaseModel, Model};
 use rand::{thread_rng, Rng};
 
 use crate::models::model::{Agent};
+use crate::models::model;
 use crate::models::game::{Game};
 use crate::models::game;
 
@@ -19,8 +20,20 @@ pub struct GA{
 // `impl トレイト名 for 型名 {..}`で定義可能
 impl GAOperation for GA {
     fn get_new_game(&self) -> Game{
-        game::new_game(10, 0.1, 50,6)
+        let agents = (0..self.population).map(|x| model::new_base_model(x,get_dna(&self.old_agents, self.population, self.mutation_rate))).collect();
+
+        game::generate_next_game(10, 0.1, 50,6, agents)
     }
+}
+
+fn get_dna(agents: &Vec<Agent>, poplation: u64, mutation_rate: f64) -> String{
+    let (ch_ag1, ch_ag2) = choose_model_parent(agents, poplation);
+
+    let mut rng = thread_rng();
+    let cross_point: u64 = rng.gen_range(0..ch_ag1.get_dna_length());
+
+    let ch_ag1 = ch_ag1.crossover(&ch_ag2, cross_point as usize);
+    ch_ag1.mutation(mutation_rate).get_dna_2_binary_digits()
 }
 
 fn choose_model_parent(agents: &Vec<Agent>, poplation: u64) -> (Agent, Agent){
@@ -35,10 +48,10 @@ fn choose_model_parent(agents: &Vec<Agent>, poplation: u64) -> (Agent, Agent){
 fn choose_model(agents: &Vec<Agent>, poplation: u64, sum_point: u64) -> Agent {
 
     let mut rng = thread_rng();
-    let mut rand_num1: u64 = rng.gen_range(0..sum_point);
+    let mut rand_num1: i64 = rng.gen_range(0..sum_point) as i64;
 
     for p in 0..poplation{
-        rand_num1 -= agents[p as usize].get_point();
+        rand_num1 -= agents[p as usize].get_point() as i64;
         if p < 0 {
             return agents[rand_num1 as usize].clone();
         }

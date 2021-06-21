@@ -16,18 +16,21 @@ pub struct Strategy{}
 
 impl StrategyOperation for Strategy {
     fn get_result(agent1: Agent, agent2: Agent) -> (Agent, Agent){
-        let agent1_choose = match agent1.get_choose() {
-            Ok(v) => v,
-            Err(_) => 0,
-        };
+        // let agent1_choose = match agent1.get_choose() {
+        //     Ok(v) => v,
+        //     Err(_) => 0,
+        // };
 
-        let agent2_choose = match agent2.get_choose() {
-            Ok(v) => v,
-            Err(_) => 0,
-        };
+        // let agent2_choose = match agent2.get_choose() {
+        //     Ok(v) => v,
+        //     Err(_) => 0,
+        // };
 
-        let option_for_1: Option = get_option(agent1_choose as u64, agent1.get_dna_2_binary_digits().len());
-        let option_for_2: Option = get_option(agent2_choose as u64, agent2.get_dna_2_binary_digits().len());
+        // let option_for_1: Option = get_option2(agent1_choose as u64, agent1.get_dna_2_binary_digits().len() as u16);
+        // let option_for_2: Option = get_option2(agent2_choose as u64, agent2.get_dna_2_binary_digits().len() as u16);
+
+        let option_for_1: Option = get_option(agent1.get_dna_sum(), agent1.get_dna_2_binary_digits().len() as u16);
+        let option_for_2: Option = get_option(agent2.get_dna_sum(), agent2.get_dna_2_binary_digits().len() as u16);
 
         (
             agent1.set_new_point(get_result_point(&option_for_1, &option_for_2)),
@@ -46,10 +49,18 @@ fn get_result_point(own_option: &Option, enemy_option: &Option) -> u64{
     }
 }
 
-pub fn get_option(dna_num: u64, dna_max_num: usize) -> Option{
+pub fn get_option(dna_num: u64, dna_max_num: u16) -> Option{
+    if dna_num < (dna_max_num / 2).into() {
+        Option::Cooperation
+    }else{
+        Option::Defection
+    }
+}
+
+pub fn get_option2(dna_num: u64, dna_max_num: usize) -> Option{
     let base: u32 = 2; 
     let two_pow:u32 = base.pow(dna_max_num as u32 );
-    if dna_num > (two_pow / 2).into() {
+    if dna_num < (two_pow / 2).into() {
         Option::Cooperation
     }else{
         Option::Defection

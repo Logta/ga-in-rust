@@ -8,6 +8,8 @@ pub trait BaseModel {
     fn set_new_point(&self, point: u64) -> Self;
     fn get_choose(&self) -> Result<u32, ParseIntError>;
     fn get_point(&self) -> u64;
+    fn get_dna_length(&self) -> u64;
+    fn get_dna_sum(&self) -> u64;
 }
 
 pub trait Model: BaseModel {
@@ -68,6 +70,14 @@ impl BaseModel for Agent {
             dna_2_binary_digits: new_dna,
             active: true,
         }
+    }
+    
+    fn get_dna_length(&self) -> u64{
+        self.dna_2_binary_digits.len() as u64
+    }
+    
+    fn get_dna_sum(&self) -> u64{
+        self.dna_2_binary_digits.chars().fold(0, |sum, a| sum + (a.to_string()).parse::<u64>().unwrap())
     }
 }
 
