@@ -1,6 +1,8 @@
 use std::u32;
 
 use crate::models::model::{Agent, Model, BaseModel};
+use crate::models::model;
+use rand::Rng;
 
 pub enum Option {
     Cooperation, //協力
@@ -29,12 +31,15 @@ impl StrategyOperation for Strategy {
         // let option_for_1: Option = get_option2(agent1_choose as u64, agent1.get_dna_2_binary_digits().len() as u16);
         // let option_for_2: Option = get_option2(agent2_choose as u64, agent2.get_dna_2_binary_digits().len() as u16);
 
-        let option_for_1: Option = get_option(agent1.get_dna_sum(), agent1.get_dna_2_binary_digits().len() as u16);
-        let option_for_2: Option = get_option(agent2.get_dna_sum(), agent2.get_dna_2_binary_digits().len() as u16);
+        // let option_for_1: Option = get_option(agent1.get_dna_sum(), agent1.get_dna_2_binary_digits().len() as u16);
+        // let option_for_2: Option = get_option(agent2.get_dna_sum(), agent2.get_dna_2_binary_digits().len() as u16);
+
+        let option_for_1: Option = get_option_probability(agent1.get_dna_sum(), agent1.get_dna_2_binary_digits().len() as usize);
+        let option_for_2: Option = get_option_probability(agent2.get_dna_sum(), agent2.get_dna_2_binary_digits().len() as usize);
 
         (
-            agent1.set_new_point(get_result_point(&option_for_1, &option_for_2)),
-            agent2.set_new_point(get_result_point(&option_for_2, &option_for_1)),
+            agent1.set_new_point(agent1.get_point() + get_result_point(&option_for_1, &option_for_2)),
+            agent2.set_new_point(agent2.get_point() + get_result_point(&option_for_2, &option_for_1)),
         )
     }
 }
@@ -65,4 +70,45 @@ pub fn get_option2(dna_num: u64, dna_max_num: usize) -> Option{
     }else{
         Option::Defection
     }
+}
+
+pub fn get_option_probability(dna_num: u64, dna_max_num: usize) -> Option{
+    let base: u32 = 2; 
+    let two_pow = base.pow(dna_max_num as u32 );
+
+    let mut rng = rand::thread_rng();
+    let probability: f64 = rng.gen();
+
+    match(two_pow==0, probability < (dna_num as f64 / two_pow as f64).into()) {
+        (true, _) => Option::Cooperation,
+        (false, true) => Option::Cooperation,
+        (false, false) => Option::Defection,
+    }
+}
+
+#[test]
+fn get_option_test(){
+    
+    let m1 = model::new_base_model(1,"11110100".to_string());
+    let m2 = model::new_base_model(1,"11110100".to_string());
+    
+    let option_for_1: Option = get_option(m1.get_dna_sum(), m1.get_dna_2_binary_digits().len() as u16);
+    let option_for_2: Option = get_option(m2.get_dna_sum(), m2.get_dna_2_binary_digits().len() as u16);
+    assert_eq!(get_result_point(&option_for_1, &option_for_2), 1);
+    
+    let m1 = model::new_base_model(1,"11100000".to_string());
+    let m2 = model::new_base_model(1,"11100000".to_string());
+    
+    let option_for_1: Option = get_option(m1.get_dna_sum(), m1.get_dna_2_binary_digits().len() as u16);
+    let option_for_2: Option = get_option(m2.get_dna_sum(), m2.get_dna_2_binary_digits().len() as u16);
+    assert_eq!(get_result_point(&option_for_1, &option_for_2), 3);
+
+    let m3 = model::new_base_model(1,"11100000".to_string());
+    assert_eq!(m3.get_point(), 0);
+
+    let m3 = m3.set_new_point(m3.get_point() + 3);
+    assert_eq!(m3.get_point(), 3);
+
+    let m3 = m3.set_new_point(m3.get_point() + 3);
+    assert_eq!(m3.get_point(), 6);
 }

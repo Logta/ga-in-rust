@@ -50,22 +50,23 @@ impl GameOperation for Game {
         for _ in 0..self.num_game {
             self.one_shot_game();
         }
-
-        let g = self.clone();
         
         GA{
-            old_agents: g.agents,
-            mutation_rate: g.mutation_rate,
-            population: g.population,
+            old_agents: self.agents.clone(),
+            mutation_rate: self.mutation_rate,
+            population: self.population,
+            num_game: self.num_game,
+            dna_length: self.dna_length,
         }
     }
 
     fn one_shot_game(&mut self){
         for proponent in 0..self.agents.len(){
             for opponent in proponent..self.agents.len(){
+                if opponent == proponent {continue};
                 let (pro, opp) = Strategy::get_result(self.agents[proponent].clone(), self.agents[opponent].clone());
-                self.agents[proponent]=pro;
-                self.agents[opponent]=opp;
+                self.agents[proponent] = pro;
+                self.agents[opponent] = opp;
             }
         }
     }
@@ -113,4 +114,41 @@ fn game(){
         println!("{}", dna);
         assert_eq!(6, dna.len());
     }
+}
+
+#[test]
+fn one_shot_game_test(){
+    let mut agents: Vec<Agent> = Vec::new();
+    agents.push(Agent {
+        id: 1,
+        point: 0,
+        dna_2_binary_digits: "11111111".to_string(),
+        active: true,
+    });
+    agents.push(Agent {
+        id: 2,
+        point: 0,
+        dna_2_binary_digits: "11111111".to_string(),
+        active: true,
+    });
+    agents.push(Agent {
+        id: 3,
+        point: 0,
+        dna_2_binary_digits: "11111111".to_string(),
+        active: true,
+    });
+    let mut g = 
+    Game {
+        population: 2,
+        mutation_rate: 0.1,
+        agents,
+        dna_length: 8,
+        num_game: 1,
+        strategy: Strategy{}
+    };
+    g.one_shot_game();
+
+    assert_eq!(g.agents[0].get_point(), 2);
+    assert_eq!(g.agents[1].get_point(), 2);
+    assert_eq!(g.agents[2].get_point(), 2);
 }

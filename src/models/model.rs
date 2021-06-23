@@ -1,5 +1,5 @@
 use core::num::ParseIntError;
-use rand::{Rng};
+use rand::Rng;
 
 // `trait トレイト名 {..}`でトレイトを定義
 pub trait BaseModel {
@@ -19,10 +19,10 @@ pub trait Model: BaseModel {
 // トレイトを実装するためだけのデータ型にはUnit構造体が便利
 #[derive (Clone)]
 pub struct Agent {
-    id: u64,
-    point: u64,
-    dna_2_binary_digits: String,
-    active: bool,
+    pub(crate) id: u64,
+    pub(crate) point: u64,
+    pub(crate) dna_2_binary_digits: String,
+    pub(crate) active: bool,
 }
 
 // `impl トレイト名 for 型名 {..}`で定義可能
@@ -119,11 +119,15 @@ fn dna_operation_test(){
     let mut m2 = new_base_model(1,"00001111".to_string());
     assert_eq!("11110000", m1.get_dna_2_binary_digits());
     assert_eq!("00001111", m2.get_dna_2_binary_digits());
+    assert_eq!(4, m1.get_dna_sum());
+    assert_eq!(4, m2.get_dna_sum());
     
     m2 = m1.crossover(&m2, 4);
     assert_eq!("11111111", m2.get_dna_2_binary_digits());
+    assert_eq!(8, m2.get_dna_sum());
 
     m1 = m1.mutation(0.2);
     assert_eq!(8, m1.get_dna_2_binary_digits().len());
+
 
 }
