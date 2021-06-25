@@ -6,7 +6,7 @@ fn main() {
     // ゲームの用意
     let generation = 50000;
     let population = 20;
-    let mut game = game::new_game(population, 0.1, 1,6);
+    let mut game = game::new_game(population, 0.01, 1,6);
     println!("GA on prisoners' dilemma Start!!");
     println!("最初の世代のDNA一覧");
     for dna in game.get_dna_list().iter(){

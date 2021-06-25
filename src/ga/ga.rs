@@ -51,13 +51,15 @@ fn get_dna(agents: &Vec<Agent>, poplation: u64, mutation_rate: f64) -> String{
 fn choose_model_parent(agents: &Vec<Agent>, poplation: u64) -> (Agent, Agent){
     let sum_point = agents.iter().fold(0, |sum, a| sum + a.get_point()*a.get_point());
 
-    let ch_ag1 = choose_model(agents, poplation, sum_point);
-    let ch_ag2 = choose_model(agents, poplation, sum_point);
+    let ch_ag1 = choose_model_roulettes(agents, poplation, sum_point);
+    let ch_ag2 = choose_model_roulettes(agents, poplation, sum_point);
+    // let ch_ag1 = choose_model_tournament(agents, get_random_model_indexes(poplation, (poplation / 2) as u16).as_ref());
+    // let ch_ag2 = choose_model_tournament(agents, get_random_model_indexes(poplation, (poplation / 2) as u16).as_ref());
 
     (ch_ag1, ch_ag2)
 }
 
-fn choose_model(agents: &Vec<Agent>, poplation: u64, sum_point: u64) -> Agent {
+fn choose_model_roulettes(agents: &Vec<Agent>, poplation: u64, sum_point: u64) -> Agent {
 
     let mut rng = thread_rng();
     let mut rand_num1: i64 = rng.gen_range(0..sum_point) as i64;
@@ -70,6 +72,36 @@ fn choose_model(agents: &Vec<Agent>, poplation: u64, sum_point: u64) -> Agent {
     }
     
     return agents[0].clone();
+}
+
+fn get_random_model_indexes(poplation: u64, select_num: u16) -> Vec<u64>{
+    let mut indexes = (0..poplation).collect::<Vec<u64>>();
+    
+    for i in 0..poplation{
+        let j = (get_rand() * poplation as f64) as usize;
+        indexes.swap(i as usize, j);
+    }
+    (0..select_num as usize).map(|s| indexes[s]).collect::<Vec<u64>>()
+}
+
+fn get_rand() -> f64{
+    let mut rng = rand::thread_rng();
+    rng.gen()
+}
+
+fn choose_model_tournament(agents: &Vec<Agent>, indexes: &[u64]) -> Agent {
+
+    let battle_agents = agents.iter().filter(|a| indexes.contains(&a.id));
+    
+    let mut max_agent: Agent = Agent{
+        id: 0,point:0,dna_2_binary_digits:"".to_string(),
+        active:false
+    };
+    for a in battle_agents{
+        max_agent = if a.get_point() >= max_agent.get_point() {a.clone()} else {max_agent};
+    }
+    
+    return max_agent.clone();
 }
 
 #[test]
@@ -118,6 +150,6 @@ fn get_agent_test(){
         active: true,
     });
     
-    let m = choose_model(&agents, 3, 60);
+    let m = choose_model_roulettes(&agents, 3, 60);
     assert_eq!(m.id, 2);
 }

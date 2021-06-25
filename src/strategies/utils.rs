@@ -73,14 +73,12 @@ pub fn get_option2(dna_num: u64, dna_max_num: usize) -> Option{
 }
 
 pub fn get_option_probability(dna_num: u64, dna_max_num: usize) -> Option{
-    let base: u32 = 2; 
-    let two_pow = base.pow(dna_max_num as u32 );
 
     let mut rng = rand::thread_rng();
     let probability: f64 = rng.gen();
 
-    match(two_pow==0, probability < (dna_num as f64 / two_pow as f64).into()) {
-        (true, _) => Option::Cooperation,
+    match(dna_num==0, probability < (dna_num as f64 / dna_max_num as f64).into()) {
+        (true, _) => Option::Defection,
         (false, true) => Option::Cooperation,
         (false, false) => Option::Defection,
     }
