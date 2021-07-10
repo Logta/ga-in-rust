@@ -1,4 +1,4 @@
-pub mod utils;
+pub mod ga;
 pub mod models;
 pub mod strategies;
-pub mod ga;
+pub mod utils;

@@ -2,7 +2,7 @@ use core::num::ParseIntError;
 use rand::Rng;
 
 // `trait トレイト名 {..}`でトレイトを定義
-pub trait BaseModel {
+pub trait BaseModel: Clone {
     fn mutation(&self, mutation_rate: f64) -> Self;
     fn crossover(&self, other: &Self, crossing_point: usize) -> Self;
     fn set_new_point(&self, point: u64) -> Self;
@@ -10,6 +10,8 @@ pub trait BaseModel {
     fn get_point(&self) -> u64;
     fn get_dna_length(&self) -> u64;
     fn get_dna_sum(&self) -> u64;
+    fn get_dna(&self) -> String;
+    fn new_base_model(id: u64, dna_2_binary_digits: String) -> Self;
 }
 
 pub trait Model: BaseModel {
@@ -17,7 +19,7 @@ pub trait Model: BaseModel {
 }
 
 // トレイトを実装するためだけのデータ型にはUnit構造体が便利
-#[derive (Clone)]
+#[derive(Clone)]
 pub struct Agent {
     pub(crate) id: u64,
     pub(crate) point: u64,
@@ -33,7 +35,7 @@ impl BaseModel for Agent {
 
     fn get_choose(&self) -> Result<u32, ParseIntError> {
         let r = u32::from_str_radix(&self.dna_2_binary_digits, 2)?;
-        return Ok(r)
+        return Ok(r);
     }
 
     fn set_new_point(&self, point: u64) -> Agent {
@@ -42,14 +44,22 @@ impl BaseModel for Agent {
             point,
             id: m.id,
             dna_2_binary_digits: String::from(&m.dna_2_binary_digits),
-            active: m.active
+            active: m.active,
         }
     }
 
     fn crossover(&self, _other: &Agent, _crossing_point: usize) -> Agent {
         let m: Agent = self.clone();
-        let head = self.dna_2_binary_digits.chars().take(_crossing_point).collect::<String>();
-        let tail = _other.dna_2_binary_digits.chars().skip(_crossing_point).collect::<String>();
+        let head = self
+            .dna_2_binary_digits
+            .chars()
+            .take(_crossing_point)
+            .collect::<String>();
+        let tail = _other
+            .dna_2_binary_digits
+            .chars()
+            .skip(_crossing_point)
+            .collect::<String>();
 
         let new_dna: String = head + &tail;
         Agent {
@@ -63,7 +73,10 @@ impl BaseModel for Agent {
     fn mutation(&self, mutation_rate: f64) -> Agent {
         let m: Agent = self.clone();
         let vec_dna: Vec<char> = m.dna_2_binary_digits.chars().collect();
-        let new_dna: String = vec_dna.into_iter().map(|x| mutation_2_one_factor(x, mutation_rate)).collect();
+        let new_dna: String = vec_dna
+            .into_iter()
+            .map(|x| mutation_2_one_factor(x, mutation_rate))
+            .collect();
         Agent {
             id: m.id,
             point: 0,
@@ -71,13 +84,28 @@ impl BaseModel for Agent {
             active: true,
         }
     }
-    
-    fn get_dna_length(&self) -> u64{
+
+    fn get_dna_length(&self) -> u64 {
         self.dna_2_binary_digits.len() as u64
     }
-    
-    fn get_dna_sum(&self) -> u64{
-        self.dna_2_binary_digits.chars().fold(0, |sum, a| sum + (a.to_string()).parse::<u64>().unwrap())
+
+    fn get_dna_sum(&self) -> u64 {
+        self.dna_2_binary_digits
+            .chars()
+            .fold(0, |sum, a| sum + (a.to_string()).parse::<u64>().unwrap())
+    }
+
+    fn get_dna(&self) -> String {
+        self.dna_2_binary_digits.clone()
+    }
+
+    fn new_base_model(id: u64, dna_2_binary_digits: String) -> Self {
+        Self {
+            id,
+            point: 0,
+            dna_2_binary_digits: String::from(dna_2_binary_digits.clone()),
+            active: true,
+        }
     }
 }
 
@@ -88,20 +116,18 @@ impl Model for Agent {
     }
 }
 
-pub fn new_base_model(id: u64, dna_2_binary_digits: String) -> Agent {
-    Agent {
-        id,
-        point: 0,
-        dna_2_binary_digits: String::from(dna_2_binary_digits.clone()),
-        active: true,
-    }
-}
+// pub fn new_base_model<T: BaseModel>(id: u64, dna_2_binary_digits: String) -> T {
+//     Box<T> {
+//         id,
+//         point: 0,
+//         dna_2_binary_digits: String::from(dna_2_binary_digits.clone()),
+//         active: true,
+//     }
+// }
 
 fn mutation_2_one_factor(c: char, mutation_rate: f64) -> char {
-    
     let mut rng = rand::thread_rng();
     let probability: f64 = rng.gen();
-    
     // c => 元のdna因子、
     // probability < mutation_rate => true  : 突然変異する、因子を反転させる
     //                                false : 突然変異しない
@@ -113,21 +139,17 @@ fn mutation_2_one_factor(c: char, mutation_rate: f64) -> char {
 }
 
 #[test]
-fn dna_operation_test(){
-    
-    let mut m1 = new_base_model(1,"11110000".to_string());
-    let mut m2 = new_base_model(1,"00001111".to_string());
+fn dna_operation_test() {
+    let mut m1: Agent = BaseModel::new_base_model(1, "11110000".to_string());
+    let mut m2: Agent = BaseModel::new_base_model(1, "00001111".to_string());
     assert_eq!("11110000", m1.get_dna_2_binary_digits());
     assert_eq!("00001111", m2.get_dna_2_binary_digits());
     assert_eq!(4, m1.get_dna_sum());
     assert_eq!(4, m2.get_dna_sum());
-    
     m2 = m1.crossover(&m2, 4);
     assert_eq!("11111111", m2.get_dna_2_binary_digits());
     assert_eq!(8, m2.get_dna_sum());
 
     m1 = m1.mutation(0.2);
     assert_eq!(8, m1.get_dna_2_binary_digits().len());
-
-
 }
