@@ -1,6 +1,6 @@
 use std::u32;
 
-use crate::models::model::{Agent, Model, BaseModel};
+use crate::models::model::{Model, BaseModel};
 use crate::models::model;
 use rand::Rng;
 
@@ -9,33 +9,49 @@ pub enum Option {
     Defection, //裏切
 }
 
-pub trait StrategyOperation {
-    fn get_result(agent1: Agent, agent2: Agent) -> (Agent, Agent);
+pub trait StrategyOperation<T> 
+where
+    T: BaseModel{
+    fn get_result(agent1: T, agent2: T) -> (T, T);
 }
 
 #[derive (Clone)]
-pub struct Strategy{}
+pub struct ThresholdSelectionStrategy{}
 
-impl StrategyOperation for Strategy {
-    fn get_result(agent1: Agent, agent2: Agent) -> (Agent, Agent){
-        // let agent1_choose = match agent1.get_choose() {
-        //     Ok(v) => v,
-        //     Err(_) => 0,
-        // };
+#[derive (Clone)]
+pub struct RouletteSelectionStrategy{}
 
-        // let agent2_choose = match agent2.get_choose() {
-        //     Ok(v) => v,
-        //     Err(_) => 0,
-        // };
+impl<T> StrategyOperation<T>  for ThresholdSelectionStrategy
+where
+    T: Model{
+    fn get_result(agent1: T, agent2: T) -> (T, T){
+        let agent1_choose = match agent1.get_choose() {
+            Ok(v) => v,
+            Err(_) => 0,
+        };
 
-        // let option_for_1: Option = get_option2(agent1_choose as u64, agent1.get_dna_2_binary_digits().len() as u16);
-        // let option_for_2: Option = get_option2(agent2_choose as u64, agent2.get_dna_2_binary_digits().len() as u16);
+        let agent2_choose = match agent2.get_choose() {
+            Ok(v) => v,
+            Err(_) => 0,
+        };
 
-        // let option_for_1: Option = get_option(agent1.get_dna_sum(), agent1.get_dna_2_binary_digits().len() as u16);
-        // let option_for_2: Option = get_option(agent2.get_dna_sum(), agent2.get_dna_2_binary_digits().len() as u16);
+        let option_for_1: Option = get_option_threshold(agent1_choose as u64, agent1.get_dna_2_binary_digits().len() as usize);
+        let option_for_2: Option = get_option_threshold(agent2_choose as u64, agent2.get_dna_2_binary_digits().len() as usize);
 
-        let option_for_1: Option = get_option_probability(agent1.get_dna_sum(), agent1.get_dna_2_binary_digits().len() as usize);
-        let option_for_2: Option = get_option_probability(agent2.get_dna_sum(), agent2.get_dna_2_binary_digits().len() as usize);
+        (
+            agent1.set_new_point(agent1.get_point() + get_result_point(&option_for_1, &option_for_2)),
+            agent2.set_new_point(agent2.get_point() + get_result_point(&option_for_2, &option_for_1)),
+        )
+    }
+}
+
+impl<T> StrategyOperation<T>  for RouletteSelectionStrategy
+where
+    T: Model{
+    fn get_result(agent1: T, agent2: T) -> (T, T){
+
+        let option_for_1: Option = get_option(agent1.get_dna_sum(), agent1.get_dna_2_binary_digits().len() as u16);
+        let option_for_2: Option = get_option(agent2.get_dna_sum(), agent2.get_dna_2_binary_digits().len() as u16);
 
         (
             agent1.set_new_point(agent1.get_point() + get_result_point(&option_for_1, &option_for_2)),
@@ -62,7 +78,8 @@ pub fn get_option(dna_num: u64, dna_max_num: u16) -> Option{
     }
 }
 
-pub fn get_option2(dna_num: u64, dna_max_num: usize) -> Option{
+//遺伝子配列中に1の数が半数を超えたらCを選ぶ
+pub fn get_option_threshold(dna_num: u64, dna_max_num: usize) -> Option{
     let base: u32 = 2; 
     let two_pow:u32 = base.pow(dna_max_num as u32 );
     if dna_num < (two_pow / 2).into() {
@@ -72,6 +89,7 @@ pub fn get_option2(dna_num: u64, dna_max_num: usize) -> Option{
     }
 }
 
+//確率で選択肢を選ぶ
 pub fn get_option_probability(dna_num: u64, dna_max_num: usize) -> Option{
 
     let mut rng = rand::thread_rng();
@@ -82,6 +100,10 @@ pub fn get_option_probability(dna_num: u64, dna_max_num: usize) -> Option{
         (false, true) => Option::Cooperation,
         (false, false) => Option::Defection,
     }
+}
+
+pub fn get_new_strategy<T: StrategyOperation>() -> T{
+    T{}
 }
 
 #[test]
