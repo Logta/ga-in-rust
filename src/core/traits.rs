@@ -216,7 +216,7 @@ mod tests {
 
     #[test]
     fn test_statistics_max_min() {
-        let data = vec![1, 5, 3, 2, 4];
+        let data = [1, 5, 3, 2, 4];
         assert_eq!(data.iter().max(), Some(&5));
         assert_eq!(data.iter().min(), Some(&1));
 

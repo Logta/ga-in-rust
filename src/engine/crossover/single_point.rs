@@ -160,7 +160,7 @@ mod tests {
     #[test]
     fn test_single_point_crossover_creation() {
         let crossover = SinglePointCrossover::new();
-        let default_crossover = SinglePointCrossover::default();
+        let default_crossover = SinglePointCrossover;
 
         // Both should be equivalent (both are unit structs)
         assert_eq!(crossover, default_crossover);
