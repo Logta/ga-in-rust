@@ -1,3 +1,4 @@
+use crate::core::types::*;
 use std::fmt;
 
 #[derive(Debug, Clone)]
@@ -14,13 +15,13 @@ pub struct Config {
 impl Config {
     pub fn new() -> Self {
         Self {
-            generations: 50_000,
-            population: 20,
-            mutation_rate: 0.01,
+            generations: DEFAULT_GENERATIONS,
+            population: DEFAULT_POPULATION,
+            mutation_rate: DEFAULT_MUTATION_RATE,
             rounds_per_generation: 1,
-            dna_length: 6,
-            report_interval: 5_000,
-            elite_size: 2,
+            dna_length: DEFAULT_DNA_LENGTH,
+            report_interval: DEFAULT_REPORT_INTERVAL,
+            elite_size: DEFAULT_ELITE_SIZE,
         }
     }
 

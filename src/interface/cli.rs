@@ -1,5 +1,5 @@
-use crate::config::ConfigBuilder;
-use crate::error::{GAError, GAResult};
+use crate::core::errors::{GAError, GAResult};
+use crate::infrastructure::config::ConfigBuilder;
 use std::env;
 
 pub struct CliArgs {
@@ -34,71 +34,71 @@ impl CliArgs {
                 "-g" | "--generations" => {
                     i += 1;
                     if i >= args.len() {
-                        return Err(GAError::InvalidChoice(
+                        return Err(GAError::ValidationError(
                             "Missing value for generations".to_string(),
                         ));
                     }
                     cli_args.generations = Some(args[i].parse().map_err(|_| {
-                        GAError::InvalidChoice("Invalid generations value".to_string())
+                        GAError::ValidationError("Invalid generations value".to_string())
                     })?);
                 }
                 "-p" | "--population" => {
                     i += 1;
                     if i >= args.len() {
-                        return Err(GAError::InvalidChoice(
+                        return Err(GAError::ValidationError(
                             "Missing value for population".to_string(),
                         ));
                     }
                     cli_args.population = Some(args[i].parse().map_err(|_| {
-                        GAError::InvalidChoice("Invalid population value".to_string())
+                        GAError::ValidationError("Invalid population value".to_string())
                     })?);
                 }
                 "-m" | "--mutation-rate" => {
                     i += 1;
                     if i >= args.len() {
-                        return Err(GAError::InvalidChoice(
+                        return Err(GAError::ValidationError(
                             "Missing value for mutation rate".to_string(),
                         ));
                     }
                     cli_args.mutation_rate = Some(args[i].parse().map_err(|_| {
-                        GAError::InvalidChoice("Invalid mutation rate value".to_string())
+                        GAError::ValidationError("Invalid mutation rate value".to_string())
                     })?);
                 }
                 "-d" | "--dna-length" => {
                     i += 1;
                     if i >= args.len() {
-                        return Err(GAError::InvalidChoice(
+                        return Err(GAError::ValidationError(
                             "Missing value for DNA length".to_string(),
                         ));
                     }
                     cli_args.dna_length = Some(args[i].parse().map_err(|_| {
-                        GAError::InvalidChoice("Invalid DNA length value".to_string())
+                        GAError::ValidationError("Invalid DNA length value".to_string())
                     })?);
                 }
                 "-r" | "--report-interval" => {
                     i += 1;
                     if i >= args.len() {
-                        return Err(GAError::InvalidChoice(
+                        return Err(GAError::ValidationError(
                             "Missing value for report interval".to_string(),
                         ));
                     }
                     cli_args.report_interval = Some(args[i].parse().map_err(|_| {
-                        GAError::InvalidChoice("Invalid report interval value".to_string())
+                        GAError::ValidationError("Invalid report interval value".to_string())
                     })?);
                 }
                 "-e" | "--elite-size" => {
                     i += 1;
                     if i >= args.len() {
-                        return Err(GAError::InvalidChoice(
+                        return Err(GAError::ValidationError(
                             "Missing value for elite size".to_string(),
                         ));
                     }
                     cli_args.elite_size = Some(args[i].parse().map_err(|_| {
-                        GAError::InvalidChoice("Invalid elite size value".to_string())
+                        GAError::ValidationError("Invalid elite size value".to_string())
                     })?);
                 }
                 _ => {
-                    return Err(GAError::InvalidChoice(format!(
+                    return Err(GAError::ValidationError(format!(
                         "Unknown argument: {}",
                         args[i]
                     )));

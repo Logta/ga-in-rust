@@ -1,6 +1,6 @@
-use ga_prisoners_dilemma::cli::CliArgs;
-use ga_prisoners_dilemma::error::GAResult;
-use ga_prisoners_dilemma::simulation::Simulation;
+use ga_prisoners_dilemma::core::errors::GAResult;
+use ga_prisoners_dilemma::domain::simulation::Simulation;
+use ga_prisoners_dilemma::interface::cli::CliArgs;
 use std::process;
 
 fn main() {

@@ -1,6 +1,6 @@
-use crate::config::Config;
-use crate::error::{GAError, GAResult};
+use crate::core::errors::{GAError, GAResult};
 use crate::ga::ga::{create_next_generation, GAOperation};
+use crate::infrastructure::config::Config;
 use crate::models::game::{new_game, GameOperation};
 use crate::models::model::Agent;
 use crate::strategies::utils::RouletteSelectionStrategy;
@@ -31,7 +31,7 @@ impl Simulation {
         for generation in 0..self.config.generations {
             let ga_result = game
                 .run_generation()
-                .map_err(|_| GAError::GameError("Failed to run generation".to_string()))?;
+                .map_err(|_| GAError::GameExecutionError("Failed to run generation".to_string()))?;
 
             if generation % self.config.report_interval == 0 {
                 let generation_stats = self.collect_generation_stats(generation, &ga_result);
