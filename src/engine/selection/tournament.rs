@@ -1,23 +1,22 @@
 /// トーナメント選択戦略の実装
-/// 
+///
 /// トーナメント選択は、個体群からランダムに選んだ小グループ（トーナメント）の中で
 /// 最も適応度の高い個体を選択する手法です。選択圧を調整しやすく、
 /// 実装が簡単で効率的な選択手法として広く使用されています。
-
 use crate::core::{errors::*, traits::*, types::*};
 use rand::{thread_rng, Rng};
 
 /// トーナメント選択戦略の実装構造体
-/// 
+///
 /// 指定されたサイズのトーナメントを開催し、その中で最も適応度の高い個体を選択します。
 /// トーナメントサイズが大きいほど選択圧が高くなり、小さいほど多様性が保たれます。
-/// 
+///
 /// # フィールド
 /// * `tournament_size` - トーナメントに参加する個体の数
 #[derive(Debug, Clone)]
 pub struct TournamentSelection {
     /// トーナメントに参加する個体の数
-    /// 
+    ///
     /// 一般的に2-5程度の値が使用されます。
     /// - 2: バランスの取れた選択圧
     /// - 3以上: より強い選択圧
@@ -26,13 +25,13 @@ pub struct TournamentSelection {
 
 impl TournamentSelection {
     /// 指定されたトーナメントサイズで新しいインスタンスを作成
-    /// 
+    ///
     /// # 引数
     /// * `tournament_size` - トーナメントに参加する個体の数（1以上）
-    /// 
+    ///
     /// # 戻り値
     /// 成功時は新しいTournamentSelectionインスタンス、失敗時はエラー
-    /// 
+    ///
     /// # エラー
     /// トーナメントサイズが0の場合、ValidationErrorが返されます
     pub fn new(tournament_size: usize) -> GAResult<Self> {
@@ -46,9 +45,9 @@ impl TournamentSelection {
     }
 
     /// サイズ2のトーナメント選択を作成
-    /// 
+    ///
     /// 最も一般的なトーナメントサイズで、適度な選択圧と多様性のバランスが取れています。
-    /// 
+    ///
     /// # 戻り値
     /// トーナメントサイズ2のTournamentSelectionインスタンス
     pub fn with_size_2() -> Self {
@@ -56,9 +55,9 @@ impl TournamentSelection {
     }
 
     /// サイズ3のトーナメント選択を作成
-    /// 
+    ///
     /// サイズ2よりも強い選択圧を持ち、より優秀な個体が選ばれやすくなります。
-    /// 
+    ///
     /// # 戻り値
     /// トーナメントサイズ3のTournamentSelectionインスタンス
     pub fn with_size_3() -> Self {
@@ -259,7 +258,7 @@ mod tests {
         // 最高適応度の個体（id=2）が最も多く選ばれることを期待
         let best_wins = results.get(&2).unwrap_or(&0);
         assert!(*best_wins > 0, "最高適応度の個体が一度も選ばれませんでした");
-        
+
         // 全ての個体が選択される可能性があることを確認（多様性）
         assert!(results.len() >= 2, "トーナメント選択に多様性がありません");
     }

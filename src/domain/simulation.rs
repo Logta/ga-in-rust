@@ -1,9 +1,8 @@
 /// 遺伝的アルゴリズムシミュレーションのドメインロジック
-/// 
+///
 /// このモジュールでは、囚人のジレンマゲームを使用した遺伝的アルゴリズムの
 /// シミュレーションを管理します。設定に基づいてゲームを実行し、
 /// 世代を重ねながら個体群の進化を観察します。
-
 use crate::core::errors::{GAError, GAResult};
 use crate::ga::ga::{create_next_generation, GAOperation};
 use crate::infrastructure::config::Config;
@@ -12,31 +11,31 @@ use crate::models::model::Agent;
 use crate::strategies::utils::RouletteSelectionStrategy;
 
 /// 遺伝的アルゴリズムシミュレーションの管理構造体
-/// 
+///
 /// シミュレーション全体の実行を管理し、設定に基づいて囚人のジレンマゲームを
 /// 用いた遺伝的アルゴリズムを実行します。世代交代を繰り返しながら、
 /// エージェントの戦略の進化を追跡します。
-/// 
+///
 /// # フィールド
 /// * `config` - シミュレーションの設定パラメータ
 pub struct Simulation {
     /// シミュレーションの設定
-    /// 
+    ///
     /// 個体数、世代数、突然変異率などの重要なパラメータを含みます
     config: Config,
 }
 
 impl Simulation {
     /// 新しいシミュレーションインスタンスを作成
-    /// 
+    ///
     /// 設定の妥当性を検証してからシミュレーションオブジェクトを作成します。
-    /// 
+    ///
     /// # 引数
     /// * `config` - シミュレーションの設定パラメータ
-    /// 
+    ///
     /// # 戻り値
     /// 成功時は新しいSimulationインスタンス、失敗時はエラー
-    /// 
+    ///
     /// # エラー
     /// 設定の検証に失敗した場合（無効なパラメータが含まれている場合）
     pub fn new(config: Config) -> GAResult<Self> {

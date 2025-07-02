@@ -1,7 +1,6 @@
 /// 遺伝的アルゴリズムのエラー処理
-/// 
+///
 /// 実行中に発生する可能性のある全てのエラーを定義
-
 use std::fmt;
 
 /// 遺伝的アルゴリズムのエラー型
@@ -14,7 +13,7 @@ pub enum GAError {
 
     /// 無効なDNA形式
     InvalidDna(String),
-    
+
     /// 無効なDNA長
     InvalidDnaLength(usize),
     /// 無効なDNAフォーマット

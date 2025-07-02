@@ -36,7 +36,8 @@ impl RankSelection {
 
         for rank in 0..population_size {
             let r = (rank + 1) as f64; // Rank 1-based
-            let prob = (2.0 - self.pressure + 2.0 * (self.pressure - 1.0) * (r - 1.0) / (n - 1.0)) / n;
+            let prob =
+                (2.0 - self.pressure + 2.0 * (self.pressure - 1.0) * (r - 1.0) / (n - 1.0)) / n;
             probabilities.push(prob);
         }
 
