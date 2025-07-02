@@ -109,12 +109,12 @@ mod tests {
     #[test]
     fn test_statistics_max_min() {
         let data = vec![1, 5, 3, 2, 4];
-        assert_eq!(data.max(), Some(5));
-        assert_eq!(data.min(), Some(1));
+        assert_eq!(data.iter().max(), Some(&5));
+        assert_eq!(data.iter().min(), Some(&1));
 
         let empty: Vec<Points> = vec![];
-        assert_eq!(empty.max(), None);
-        assert_eq!(empty.min(), None);
+        assert_eq!(empty.iter().max(), None);
+        assert_eq!(empty.iter().min(), None);
     }
 
     #[test]

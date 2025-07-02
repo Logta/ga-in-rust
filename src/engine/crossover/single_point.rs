@@ -2,7 +2,7 @@ use crate::core::{errors::*, traits::*, types::*};
 use rand::{thread_rng, Rng};
 
 /// Single-point crossover operation
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SinglePointCrossover;
 
 impl SinglePointCrossover {
@@ -162,11 +162,8 @@ mod tests {
         let crossover = SinglePointCrossover::new();
         let default_crossover = SinglePointCrossover::default();
 
-        // Both should be equivalent
-        assert_eq!(
-            std::mem::discriminant(&crossover),
-            std::mem::discriminant(&default_crossover)
-        );
+        // Both should be equivalent (both are unit structs)
+        assert_eq!(crossover, default_crossover);
     }
 
     #[test]
