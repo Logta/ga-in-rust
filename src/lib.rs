@@ -16,11 +16,15 @@
 /// ## 使用例
 /// 
 /// ```rust
-/// use ga_prisoners_dilemma::{Config, Simulation};
+/// use ga_prisoners_dilemma::infrastructure::config::Config;
+/// use ga_prisoners_dilemma::domain::simulation::Simulation;
 /// 
+/// # fn main() -> ga_prisoners_dilemma::core::errors::GAResult<()> {
 /// let config = Config::new();
 /// let simulation = Simulation::new(config)?;
-/// let result = simulation.run()?;
+/// let _result = simulation.run()?;
+/// # Ok(())
+/// # }
 /// ```
 
 /// 基本的な型、トレイト、エラーハンドリング

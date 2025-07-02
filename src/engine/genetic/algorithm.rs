@@ -1,4 +1,4 @@
-use crate::core::{errors::*, traits::*, types::*};
+use crate::core::traits::*;
 
 /// Placeholder for future genetic algorithm engine
 #[derive(Debug)]
