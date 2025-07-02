@@ -1,4 +1,4 @@
-[alias.cargo]
+[alias.cargo.versions]
 b = "build"
 br = "build --release"
 c = "check"
@@ -6,6 +6,6 @@ r = "run"
 t = "test"
 f = "fmt"
 
-[alias.mise]
+[alias.mise.versions]
 r = "run"
 t = "tasks"
