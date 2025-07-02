@@ -1,11 +1,11 @@
-use crate::models::model::{BaseModel, Model, AgentId, Points, Dna};
+use crate::models::model::{AgentId, BaseModel, Dna, Model, Points};
 use crate::strategies::utils::StrategyOperation;
 use rand::{thread_rng, Rng};
 
 use crate::models::game;
 use crate::models::game::Game;
 
-pub trait GAOperation {
+pub trait GAOperation<T: BaseModel> {
     fn get_points_list(&self) -> Vec<Points>;
     fn get_dna_list(&self) -> Vec<String>;
 }
@@ -18,7 +18,7 @@ pub struct GA<T: BaseModel> {
     pub num_games: usize,
 }
 
-impl<T: Model> GAOperation for GA<T> {
+impl<T: Model> GAOperation<T> for GA<T> {
     fn get_dna_list(&self) -> Vec<String> {
         self.old_agents
             .iter()
@@ -58,14 +58,21 @@ where
     )
 }
 
-fn generate_offspring_dna<T: Model>(agents: &[Box<T>], population: usize, mutation_rate: f64) -> Dna {
+fn generate_offspring_dna<T: Model>(
+    agents: &[Box<T>],
+    population: usize,
+    mutation_rate: f64,
+) -> Dna {
     let (parent1, parent2) = select_parents(agents, population);
 
     let mut rng = thread_rng();
     let cross_point = rng.gen_range(0..parent1.get_dna_length());
 
     let offspring = parent1.crossover(&parent2, cross_point);
-    offspring.mutation(mutation_rate).get_dna_binary().to_string()
+    offspring
+        .mutation(mutation_rate)
+        .get_dna_binary()
+        .to_string()
 }
 
 fn select_parents<T: BaseModel>(agents: &[Box<T>], population: usize) -> (T, T) {
@@ -83,7 +90,11 @@ fn select_parents<T: BaseModel>(agents: &[Box<T>], population: usize) -> (T, T) 
     (parent1, parent2)
 }
 
-fn roulette_wheel_selection<T: BaseModel>(agents: &[Box<T>], _population: usize, fitness_sum: u64) -> T {
+fn roulette_wheel_selection<T: BaseModel>(
+    agents: &[Box<T>],
+    _population: usize,
+    fitness_sum: u64,
+) -> T {
     let mut rng = thread_rng();
     let mut selection_point = rng.gen_range(0..fitness_sum) as i64;
 
@@ -94,15 +105,14 @@ fn roulette_wheel_selection<T: BaseModel>(agents: &[Box<T>], _population: usize,
             return (**agent).clone();
         }
     }
-    
+
     (**agents.first().expect("Empty agents list")).clone()
 }
-
 
 #[test]
 fn points_sum_test() {
     use crate::models::model::Agent;
-    
+
     let agents = [
         Agent {
             id: 1,
@@ -130,7 +140,7 @@ fn points_sum_test() {
 #[test]
 fn selection_test() {
     use crate::models::model::Agent;
-    
+
     let agents: Vec<Box<Agent>> = vec![
         Box::new(Agent {
             id: 1,

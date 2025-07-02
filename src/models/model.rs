@@ -50,7 +50,7 @@ impl BaseModel for Agent {
     fn crossover(&self, other: &Agent, crossing_point: usize) -> Agent {
         let head = &self.dna[..crossing_point.min(self.dna.len())];
         let tail = &other.dna[crossing_point.min(other.dna.len())..];
-        
+
         Agent {
             id: self.id,
             points: 0,
@@ -60,11 +60,12 @@ impl BaseModel for Agent {
     }
 
     fn mutation(&self, mutation_rate: f64) -> Agent {
-        let new_dna: String = self.dna
+        let new_dna: String = self
+            .dna
             .chars()
             .map(|c| mutate_bit(c, mutation_rate))
             .collect();
-            
+
         Agent {
             id: self.id,
             points: 0,
@@ -78,10 +79,7 @@ impl BaseModel for Agent {
     }
 
     fn get_dna_sum(&self) -> u64 {
-        self.dna
-            .chars()
-            .filter(|&c| c == '1')
-            .count() as u64
+        self.dna.chars().filter(|&c| c == '1').count() as u64
     }
 
     fn get_dna(&self) -> &str {

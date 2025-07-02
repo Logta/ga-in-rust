@@ -26,11 +26,13 @@ where
     T: Model,
 {
     fn play_match(&self, agent1: &T, agent2: &T) -> (T, T) {
-        let choice1 = agent1.get_choice()
+        let choice1 = agent1
+            .get_choice()
             .map(|v| get_threshold_choice(v as u64, agent1.get_dna_binary().len()))
             .unwrap_or(Choice::Defect);
 
-        let choice2 = agent2.get_choice()
+        let choice2 = agent2
+            .get_choice()
             .map(|v| get_threshold_choice(v as u64, agent2.get_dna_binary().len()))
             .unwrap_or(Choice::Defect);
 
@@ -53,14 +55,8 @@ where
     T: Model,
 {
     fn play_match(&self, agent1: &T, agent2: &T) -> (T, T) {
-        let choice1 = get_probabilistic_choice(
-            agent1.get_dna_sum(),
-            agent1.get_dna_binary().len(),
-        );
-        let choice2 = get_probabilistic_choice(
-            agent2.get_dna_sum(),
-            agent2.get_dna_binary().len(),
-        );
+        let choice1 = get_probabilistic_choice(agent1.get_dna_sum(), agent1.get_dna_binary().len());
+        let choice2 = get_probabilistic_choice(agent2.get_dna_sum(), agent2.get_dna_binary().len());
 
         let points1 = calculate_payoff(&choice1, &choice2);
         let points2 = calculate_payoff(&choice2, &choice1);
@@ -98,10 +94,10 @@ fn get_probabilistic_choice(ones_count: u64, dna_length: usize) -> Choice {
     if ones_count == 0 {
         return Choice::Defect;
     }
-    
+
     let mut rng = rand::thread_rng();
     let cooperation_probability = ones_count as f64 / dna_length as f64;
-    
+
     if rng.gen::<f64>() < cooperation_probability {
         Choice::Cooperate
     } else {
@@ -120,7 +116,7 @@ fn payoff_test() {
 #[test]
 fn agent_points_test() {
     use crate::models::model::Agent;
-    
+
     let agent = Agent::new(1, "11100000".to_string());
     assert_eq!(agent.get_points(), 0);
 
