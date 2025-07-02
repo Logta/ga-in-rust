@@ -73,8 +73,8 @@ codegen-units = 1
 
 [features]
 default = []
-parallel = ["dep:rayon"]
-serde-support = ["dep:serde", "dep:serde_json"]
+parallel = ["rayon"]
+serde-support = ["serde", "serde_json"]
 
 [package.metadata.docs.rs]
 all-features = true
