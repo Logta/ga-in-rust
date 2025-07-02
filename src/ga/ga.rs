@@ -1,4 +1,4 @@
-use crate::models::model::{Agent, BaseModel, Model};
+use crate::models::model::{BaseModel, Model, AgentId, Points, Dna};
 use crate::strategies::utils::StrategyOperation;
 use rand::{thread_rng, Rng};
 
@@ -6,44 +6,44 @@ use crate::models::game;
 use crate::models::game::Game;
 
 pub trait GAOperation {
-    fn get_point_list(&self) -> Vec<u64>;
+    fn get_points_list(&self) -> Vec<Points>;
     fn get_dna_list(&self) -> Vec<String>;
 }
 
-// トレイトを実装するためだけのデータ型にはUnit構造体が便利
 pub struct GA<T: BaseModel> {
     pub old_agents: Vec<Box<T>>,
     pub mutation_rate: f64,
-    pub population: u64,
-    pub dna_length: u64,
-    pub num_game: u64, // １世代でのゲーム回数
+    pub population: usize,
+    pub dna_length: usize,
+    pub num_games: usize,
 }
 
-// `impl トレイト名 for 型名 {..}`で定義可能
 impl<T: Model> GAOperation for GA<T> {
     fn get_dna_list(&self) -> Vec<String> {
         self.old_agents
             .iter()
-            .map(|x| x.get_dna_2_binary_digits())
+            .map(|agent| agent.get_dna_binary().to_string())
             .collect()
     }
 
-    fn get_point_list(&self) -> Vec<u64> {
-        let iter = self.old_agents.iter();
-        iter.map(|x| x.get_point()).collect()
+    fn get_points_list(&self) -> Vec<Points> {
+        self.old_agents
+            .iter()
+            .map(|agent| agent.get_points())
+            .collect()
     }
 }
 
-pub fn get_new_game<T, U>(ga: GA<T>, strategy: U) -> Game<T, U>
+pub fn create_next_generation<T, U>(ga: GA<T>, strategy: U) -> Game<T, U>
 where
     T: Model,
     U: StrategyOperation<T>,
 {
     let agents = (0..ga.population)
-        .map(|x| {
-            Box::from(T::new_base_model(
-                x,
-                get_dna(&ga.old_agents, ga.population, ga.mutation_rate),
+        .map(|i| {
+            Box::from(T::new(
+                i as AgentId,
+                generate_offspring_dna(&ga.old_agents, ga.population, ga.mutation_rate),
             ))
         })
         .collect::<Vec<Box<T>>>();
@@ -51,130 +51,106 @@ where
     game::generate_next_game::<T, U>(
         ga.population,
         ga.mutation_rate,
-        ga.num_game,
+        ga.num_games,
         ga.dna_length,
         agents,
         strategy,
     )
 }
 
-fn get_dna<T: Model>(agents: &Vec<Box<T>>, poplation: u64, mutation_rate: f64) -> String {
-    let (ch_ag1, ch_ag2) = choose_model_parent(agents, poplation);
+fn generate_offspring_dna<T: Model>(agents: &[Box<T>], population: usize, mutation_rate: f64) -> Dna {
+    let (parent1, parent2) = select_parents(agents, population);
 
     let mut rng = thread_rng();
-    let cross_point: u64 = rng.gen_range(0..ch_ag1.get_dna_length());
+    let cross_point = rng.gen_range(0..parent1.get_dna_length());
 
-    let ch_ag1 = ch_ag1.crossover(&ch_ag2, cross_point as usize);
-    ch_ag1.mutation(mutation_rate).get_dna_2_binary_digits()
+    let offspring = parent1.crossover(&parent2, cross_point);
+    offspring.mutation(mutation_rate).get_dna_binary().to_string()
 }
 
-fn choose_model_parent<T: BaseModel>(agents: &Vec<Box<T>>, poplation: u64) -> (T, T) {
-    let sum_point = agents
+fn select_parents<T: BaseModel>(agents: &[Box<T>], population: usize) -> (T, T) {
+    let fitness_sum = agents
         .iter()
-        .fold(0, |sum, a| sum + a.get_point() * a.get_point());
+        .map(|a| {
+            let points = a.get_points();
+            points * points
+        })
+        .sum();
 
-    let ch_ag1 = choose_model_roulettes(agents, poplation, sum_point);
-    let ch_ag2 = choose_model_roulettes(agents, poplation, sum_point);
+    let parent1 = roulette_wheel_selection(agents, population, fitness_sum);
+    let parent2 = roulette_wheel_selection(agents, population, fitness_sum);
 
-    (ch_ag1, ch_ag2)
+    (parent1, parent2)
 }
 
-fn choose_model_roulettes<T: BaseModel>(agents: &Vec<Box<T>>, poplation: u64, sum_point: u64) -> T {
+fn roulette_wheel_selection<T: BaseModel>(agents: &[Box<T>], _population: usize, fitness_sum: u64) -> T {
     let mut rng = thread_rng();
-    let mut rand_num1: i64 = rng.gen_range(0..sum_point) as i64;
+    let mut selection_point = rng.gen_range(0..fitness_sum) as i64;
 
-    for p in 0..poplation {
-        rand_num1 -= (agents[p as usize].get_point() * agents[p as usize].get_point()) as i64;
-        if rand_num1 <= 0 {
-            return *agents[p as usize].clone();
+    for agent in agents {
+        let fitness = agent.get_points();
+        selection_point -= (fitness * fitness) as i64;
+        if selection_point <= 0 {
+            return (**agent).clone();
         }
     }
-    return *agents[0].clone();
+    
+    (**agents.first().expect("Empty agents list")).clone()
 }
 
-fn get_random_model_indexes(poplation: u64, select_num: u16) -> Vec<u64> {
-    let mut indexes = (0..poplation).collect::<Vec<u64>>();
-
-    for i in 0..poplation {
-        let j = (get_rand() * poplation as f64) as usize;
-        indexes.swap(i as usize, j);
-    }
-    (0..select_num as usize)
-        .map(|s| indexes[s])
-        .collect::<Vec<u64>>()
-}
-
-fn get_rand() -> f64 {
-    let mut rng = rand::thread_rng();
-    rng.gen()
-}
-
-fn choose_model_tournament(agents: &Vec<Agent>, indexes: &[u64]) -> Agent {
-    let battle_agents = agents.iter().filter(|a| indexes.contains(&a.id));
-
-    let mut max_agent: Agent = Agent {
-        id: 0,
-        point: 0,
-        dna_2_binary_digits: "".to_string(),
-        active: false,
-    };
-    for a in battle_agents {
-        max_agent = if a.get_point() >= max_agent.get_point() {
-            a.clone()
-        } else {
-            max_agent
-        };
-    }
-    return max_agent.clone();
-}
 
 #[test]
-fn point_sum_test() {
+fn points_sum_test() {
+    use crate::models::model::Agent;
+    
     let agents = [
         Agent {
             id: 1,
-            point: 10,
-            dna_2_binary_digits: "11110000".to_string(),
+            points: 10,
+            dna: "11110000".to_string(),
             active: true,
         },
         Agent {
             id: 2,
-            point: 20,
-            dna_2_binary_digits: "11110000".to_string(),
+            points: 20,
+            dna: "11110000".to_string(),
             active: true,
         },
         Agent {
             id: 3,
-            point: 30,
-            dna_2_binary_digits: "11110000".to_string(),
+            points: 30,
+            dna: "11110000".to_string(),
             active: true,
         },
     ];
-    let sum_point = agents.iter().fold(0, |sum, a| sum + a.get_point());
-    assert_eq!(sum_point, 60);
+    let sum_points: u64 = agents.iter().map(|a| a.get_points()).sum();
+    assert_eq!(sum_points, 60);
 }
 
 #[test]
-fn get_agent_test() {
-    let mut agents: Vec<Box<Agent>> = Vec::new();
-    agents.push(Box::from(Agent {
-        id: 1,
-        point: 0,
-        dna_2_binary_digits: "11110000".to_string(),
-        active: true,
-    }));
-    agents.push(Box::from(Agent {
-        id: 2,
-        point: 60,
-        dna_2_binary_digits: "11110000".to_string(),
-        active: true,
-    }));
-    agents.push(Box::from(Agent {
-        id: 3,
-        point: 0,
-        dna_2_binary_digits: "11110000".to_string(),
-        active: true,
-    }));
-    let m = choose_model_roulettes(&agents, 3, 60);
-    assert_eq!(m.id, 2);
+fn selection_test() {
+    use crate::models::model::Agent;
+    
+    let agents: Vec<Box<Agent>> = vec![
+        Box::new(Agent {
+            id: 1,
+            points: 0,
+            dna: "11110000".to_string(),
+            active: true,
+        }),
+        Box::new(Agent {
+            id: 2,
+            points: 60,
+            dna: "11110000".to_string(),
+            active: true,
+        }),
+        Box::new(Agent {
+            id: 3,
+            points: 0,
+            dna: "11110000".to_string(),
+            active: true,
+        }),
+    ];
+    let selected = roulette_wheel_selection(&agents, 3, 3600);
+    assert_eq!(selected.id, 2);
 }

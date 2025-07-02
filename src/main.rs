@@ -1,45 +1,67 @@
-use ga_prisoners_dilemma::ga::ga;
-use ga_prisoners_dilemma::ga::ga::{GAOperation, GA};
-use ga_prisoners_dilemma::models::game;
-use ga_prisoners_dilemma::models::game::GameOperation;
+use ga_prisoners_dilemma::ga::ga::{create_next_generation, GAOperation};
+use ga_prisoners_dilemma::models::game::{new_game, GameOperation};
 use ga_prisoners_dilemma::models::model::Agent;
-use ga_prisoners_dilemma::strategies::utils::{RouletteSelectionStrategy, StrategyOperation};
+use ga_prisoners_dilemma::strategies::utils::RouletteSelectionStrategy;
 
 fn main() {
-    // ゲームの用意
-    let generation = 50000;
-    let population = 20;
-    let mut game = game::new_game::<Agent, RouletteSelectionStrategy>(
-        population,
-        0.01,
-        1,
-        6,
+    const GENERATIONS: usize = 50000;
+    const POPULATION: usize = 20;
+    const MUTATION_RATE: f64 = 0.01;
+    const ROUNDS_PER_GENERATION: usize = 1;
+    const DNA_LENGTH: usize = 6;
+    const REPORT_INTERVAL: usize = 5000;
+    
+    let mut game = new_game::<Agent, RouletteSelectionStrategy>(
+        POPULATION,
+        MUTATION_RATE,
+        ROUNDS_PER_GENERATION,
+        DNA_LENGTH,
         RouletteSelectionStrategy {},
     );
-    println!("GA on prisoners' dilemma Start!!");
-    println!("最初の世代のDNA一覧");
-    for dna in game.get_dna_list().iter() {
-        println!("{}", dna);
+    
+    println!("Genetic Algorithm - Prisoner's Dilemma");
+    println!("======================================");
+    println!("Population: {}", POPULATION);
+    println!("Generations: {}", GENERATIONS);
+    println!("Mutation rate: {}", MUTATION_RATE);
+    println!("DNA length: {}", DNA_LENGTH);
+    println!("\nInitial population:");
+    
+    for (i, dna) in game.get_dna_list().iter().enumerate() {
+        println!("Agent {:2}: {}", i, dna);
     }
-    println!("");
-    // GA開始
-    for index in 0..generation {
-        let ga = game.do_game();
-        if index % 5000 == 0 {
-            println!("-----");
-            for p in 0..population {
-                println!("{}", ga.get_dna_list()[p as usize]);
-                println!("{}", ga.get_point_list()[p as usize]);
+    println!();
+    
+    for generation in 0..GENERATIONS {
+        let ga_result = game.run_generation();
+        
+        if generation % REPORT_INTERVAL == 0 {
+            println!("\nGeneration {}", generation);
+            println!("{}", "-".repeat(40));
+            
+            let dna_list = ga_result.get_dna_list();
+            let points_list = ga_result.get_points_list();
+            
+            for i in 0..POPULATION {
+                println!("Agent {:2}: {} (points: {})", 
+                    i, dna_list[i], points_list[i]);
             }
-            println!("-----");
+            
+            let avg_points: f64 = points_list.iter().sum::<u64>() as f64 / POPULATION as f64;
+            println!("Average points: {:.2}", avg_points);
         }
-        game = ga::get_new_game(ga, RouletteSelectionStrategy {});
+        
+        game = create_next_generation(ga_result, RouletteSelectionStrategy {});
     }
 
-    // 結果確認
-    println!("GA {}世代が完了しました!", generation);
-    for dna in game.get_dna_list().iter() {
-        println!("{}", dna);
+    println!("\n\nFinal Results (Generation {})", GENERATIONS);
+    println!("{}", "=".repeat(40));
+    
+    for (i, dna) in game.get_dna_list().iter().enumerate() {
+        println!("Agent {:2}: {}", i, dna);
     }
-    println!("");
+    
+    let final_points = game.get_points_list();
+    let avg_points: f64 = final_points.iter().sum::<u64>() as f64 / POPULATION as f64;
+    println!("\nFinal average points: {:.2}", avg_points);
 }
