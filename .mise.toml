@@ -1,0 +1,66 @@
+[tools]
+rust = "stable"
+
+[env]
+RUST_BACKTRACE = "1"
+RUST_LOG = "debug"
+
+[tasks.build]
+description = "Build the project in release mode"
+run = "cargo build --release"
+
+[tasks.dev]
+description = "Run the project in development mode"
+run = "cargo run"
+
+[tasks.test]
+description = "Run all tests"
+run = "cargo test"
+
+[tasks.test-verbose]
+description = "Run tests with verbose output"
+run = "cargo test -- --nocapture"
+
+[tasks.check]
+description = "Check code without building"
+run = "cargo check"
+
+[tasks.fmt]
+description = "Format code using rustfmt"
+run = "cargo fmt"
+
+[tasks.lint]
+description = "Run clippy for linting"
+run = "cargo clippy -- -D warnings"
+
+[tasks.clean]
+description = "Clean build artifacts"
+run = "cargo clean"
+
+[tasks.bench]
+description = "Run benchmarks"
+run = "cargo bench"
+
+[tasks.doc]
+description = "Generate documentation"
+run = "cargo doc --open"
+
+[tasks.update]
+description = "Update dependencies"
+run = "cargo update"
+
+[tasks.audit]
+description = "Audit dependencies for security vulnerabilities"
+run = "cargo audit"
+
+[tasks.watch]
+description = "Watch for changes and run"
+run = "cargo watch -x run"
+
+[tasks.watch-test]
+description = "Watch for changes and run tests"
+run = "cargo watch -x test"
+
+[tasks.all]
+description = "Run fmt, check, clippy and test"
+run = ["mise run fmt", "mise run check", "mise run lint", "mise run test"]

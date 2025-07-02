@@ -1,0 +1,11 @@
+[alias.cargo]
+b = "build"
+br = "build --release"
+c = "check"
+r = "run"
+t = "test"
+f = "fmt"
+
+[alias.mise]
+r = "run"
+t = "tasks"
