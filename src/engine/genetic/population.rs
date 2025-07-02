@@ -1,20 +1,52 @@
+/// 遺伝的アルゴリズムの個体群管理モジュール
+/// 
+/// このモジュールでは、遺伝的アルゴリズムにおける個体群（Population）の管理を行います。
+/// 個体群は複数のエージェント（個体）から構成され、世代を重ねて進化していきます。
+
 use crate::core::{errors::*, traits::*, types::*};
 use rand::{thread_rng, Rng};
 
-/// Population management for genetic algorithms
+/// 遺伝的アルゴリズムの個体群を管理する構造体
+/// 
+/// 個体群は遺伝的アルゴリズムの核となる概念で、複数の個体（エージェント）を管理し、
+/// 世代交代、統計情報の計算、エリート保存などの機能を提供します。
+/// 
+/// # 型パラメータ
+/// * `T` - 個体の型（Agentトレイトを実装している必要がある）
+/// 
+/// # フィールド
+/// * `agents` - 個体群を構成するエージェントのベクタ
+/// * `generation` - 現在の世代番号
+/// * `elite_size` - 次世代に引き継がれるエリート個体の数
 #[derive(Debug, Clone)]
 pub struct Population<T: Agent> {
+    /// 個体群を構成するエージェント
     agents: Vec<T>,
+    /// 現在の世代番号（0から開始）
     generation: Generation,
+    /// エリート保存で残される個体数
     elite_size: usize,
 }
 
 impl<T: Agent> Population<T> {
+    /// 指定されたエージェントリストから新しい個体群を作成
+    /// 
+    /// # 引数
+    /// * `agents` - 個体群を構成するエージェントのベクタ
+    /// * `elite_size` - エリート保存で残される個体数
+    /// 
+    /// # 戻り値
+    /// 成功時は新しいPopulationインスタンス、失敗時はエラー
+    /// 
+    /// # エラー
+    /// * エージェントリストが空の場合
+    /// * エリートサイズが無効な場合（個体群サイズより大きいなど）
     pub fn new(agents: Vec<T>, elite_size: usize) -> GAResult<Self> {
         if agents.is_empty() {
             return Err(GAError::EmptyPopulation);
         }
 
+        // エリートサイズのバリデーション
         crate::core::errors::validation::validate_elite_size(elite_size, agents.len())?;
 
         Ok(Self {

@@ -1,31 +1,140 @@
+/// 遺伝的アルゴリズムのコアトレイト定義
+/// 
+/// このモジュールでは、遺伝的アルゴリズムの各構成要素が実装すべき
+/// トレイトを定義しています。Rustのトレイトシステムを活用し、
+/// 型安全性と拡張性を両立した設計を実現しています。
+
 use crate::core::types::*;
 
-/// Base trait for all genetic algorithm entities
+/// 全ての遺伝的アルゴリズムエンティティの基底トレイト
+/// 
+/// 遺伝的アルゴリズムで扱う全てのオブジェクトが実装すべき基本的な機能を定義。
+/// Clone, Send, Syncトレイトを要求することで、並行処理に対応しています。
+/// 
+/// # 必須メソッド
+/// * `id()` - エンティティの一意識別子を返す
 pub trait BaseEntity: Clone + Send + Sync {
+    /// エンティティの一意識別子を取得
+    /// 
+    /// # 戻り値
+    /// エンティティのユニークなID
     fn id(&self) -> AgentId;
 }
 
-/// Trait for genetic operations on agents
+/// 遺伝的操作を行うトレイト
+/// 
+/// 遺伝的アルゴリズムの核となる遺伝的操作（交叉、突然変異、適応度評価）
+/// を定義します。BaseEntityを継承し、基本的な機能も利用可能です。
+/// 
+/// # 必須メソッド
+/// * `crossover()` - 他の個体との交叉操作
+/// * `mutate()` - 突然変異操作
+/// * `fitness()` - 適応度評価
 pub trait GeneticOperations: BaseEntity {
+    /// 他の個体との交叉を実行
+    /// 
+    /// # 引数
+    /// * `other` - 交叉相手の個体
+    /// * `point` - 交叉点（遺伝子を分割する位置）
+    /// 
+    /// # 戻り値
+    /// 交叉により生成された新しい個体
     fn crossover(&self, other: &Self, point: CrossoverPoint) -> Self;
+    
+    /// 突然変異を実行
+    /// 
+    /// # 引数
+    /// * `rate` - 突然変異率（0.0-1.0）
+    /// 
+    /// # 戻り値
+    /// 突然変異が適用された個体（変異が発生しない場合は元の個体のクローン）
     fn mutate(&self, rate: MutationRate) -> Self;
+    
+    /// 個体の適応度を取得
+    /// 
+    /// # 戻り値
+    /// 環境への適応度を表す数値（通常は高いほど良い）
     fn fitness(&self) -> Fitness;
 }
 
-/// Trait for DNA operations
+/// DNA操作に関するトレイト
+/// 
+/// 遺伝子情報（DNA）に対する基本的な操作を定義します。
+/// 囚人のジレンマでは、DNAは戦略を表現する文字列として扱われます。
+/// 
+/// # 必須メソッド
+/// * `dna()` - DNA文字列の参照を取得
+/// * `dna_length()` - DNAの長さを取得
+/// * `dna_sum()` - DNA内の文字の数値合計
+/// * `dna_binary()` - DNAの文字列表現を取得
 pub trait DnaOperations {
+    /// DNA文字列の参照を取得
+    /// 
+    /// # 戻り値
+    /// DNAを表現する文字列への参照
     fn dna(&self) -> &Dna;
+    
+    /// DNAの長さを取得
+    /// 
+    /// # 戻り値
+    /// DNA文字列の文字数
     fn dna_length(&self) -> usize;
+    
+    /// DNA内の文字の数値合計を取得
+    /// 
+    /// 統計情報や多様性の計算に使用されます。
+    /// 
+    /// # 戻り値
+    /// DNA内の全文字を数値として合計した値
     fn dna_sum(&self) -> u64;
+    
+    /// DNAの文字列表現を取得
+    /// 
+    /// # 戻り値
+    /// DNAの文字列表現
     fn dna_binary(&self) -> &str;
 }
 
-/// Trait for agent behavior in games
+/// ゲーム内でのエージェント行動を定義するトレイト
+/// 
+/// 遺伝的操作とDNA操作の両方を継承し、ゲーム固有の機能を追加します。
+/// 囚人のジレンマゲームにおけるエージェントの基本的な行動を定義。
+/// 
+/// # 必須メソッド
+/// * `points()` - 現在の獲得ポイント
+/// * `with_points()` - ポイントを設定した新しいインスタンス
+/// * `is_active()` - アクティブ状態の確認
+/// * `activate()` - エージェントをアクティブ化
+/// * `deactivate()` - エージェントを非アクティブ化
 pub trait Agent: GeneticOperations + DnaOperations {
+    /// 現在の獲得ポイントを取得
+    /// 
+    /// # 戻り値
+    /// ゲームで獲得した累計ポイント
     fn points(&self) -> Points;
+    
+    /// 指定されたポイントを持つ新しいインスタンスを作成
+    /// 
+    /// Rustの不変性原則に従い、既存のインスタンスを変更せず、
+    /// 新しいインスタンスを作成して返します。
+    /// 
+    /// # 引数
+    /// * `points` - 設定するポイント数
+    /// 
+    /// # 戻り値
+    /// 指定されたポイントを持つ新しいエージェント
     fn with_points(&self, points: Points) -> Self;
+    
+    /// エージェントがアクティブかどうかを確認
+    /// 
+    /// # 戻り値
+    /// アクティブな場合true、そうでなければfalse
     fn is_active(&self) -> bool;
+    
+    /// エージェントをアクティブ状態にする
     fn activate(&mut self);
+    
+    /// エージェントを非アクティブ状態にする
     fn deactivate(&mut self);
 }
 

@@ -1,37 +1,118 @@
+/// 遺伝的アルゴリズムエラー処理モジュール
+/// 
+/// このモジュールでは、遺伝的アルゴリズムの実行中に発生する可能性のある
+/// 全てのエラーを定義し、適切なエラーハンドリングを提供しています。
+
 use std::fmt;
 
+/// 遺伝的アルゴリズムで発生する可能性のあるエラー列挙型
+/// 
+/// Rustのベストプラクティスに従い、エラーの種類を細かく分類し、
+/// 各エラーに適切なコンテキスト情報を付与しています。
 #[derive(Debug, Clone, PartialEq)]
 pub enum GAError {
-    // Population errors
+    // ## 個体群関連エラー
+    
+    /// 個体群が空の場合のエラー
+    /// 
+    /// 遺伝的アルゴリズムを実行するためには少なくとも1つの個体が必要
     EmptyPopulation,
+    
+    /// 無効な個体群サイズエラー
+    /// 
+    /// 個体群サイズが0または設定可能な範囲外の場合に発生
     InvalidPopulationSize(usize),
 
-    // DNA errors
+    // ## DNA関連エラー
+    
+    /// 無効なDNA形式エラー
+    /// 
+    /// DNAに無効な文字が含まれている場合など
     InvalidDna(String),
+    
+    /// 無効なDNA長エラー
+    /// 
+    /// DNAの長さが期待される範囲外の場合に発生
     InvalidDnaLength(usize),
+    
+    /// DNAフォーマットエラー
+    /// 
+    /// DNAの形式が期待される形式と異なる場合に発生
     InvalidDnaFormat(String),
 
-    // Configuration errors
+    // ## 設定関連エラー
+    
+    /// 無効な突然変異率エラー
+    /// 
+    /// 突然変異率が0.0-1.0の範囲外の場合に発生
     InvalidMutationRate(f64),
+    
+    /// 無効な交叉点エラー
+    /// 
+    /// 交叉点がDNAの長さを超えている場合などに発生
     InvalidCrossoverPoint(usize),
+    
+    /// 無効なエリートサイズエラー
+    /// 
+    /// エリートサイズが個体群サイズを超えている場合などに発生
     InvalidEliteSize(usize),
+    
+    /// 無効な世代数エラー
+    /// 
+    /// 世代数が無効な値の場合に発生
     InvalidGenerationCount(usize),
 
-    // Game errors
+    // ## ゲーム関連エラー
+    
+    /// ゲーム初期化エラー
+    /// 
+    /// 囚人のジレンマゲームの初期化に失敗した場合
     GameInitializationError(String),
+    
+    /// ゲーム実行エラー
+    /// 
+    /// ゲームの実行中に予期しないエラーが発生した場合
     GameExecutionError(String),
+    
+    /// 無効なゲーム状態エラー
+    /// 
+    /// ゲームが不正な状態になった場合
     InvalidGameState(String),
 
-    // Selection errors
+    // ## 選択関連エラー
+    
+    /// 選択処理エラー
+    /// 
+    /// 個体選択処理中にエラーが発生した場合
     SelectionError(String),
+    
+    /// 候補不足エラー
+    /// 
+    /// 選択に必要な候補数が不足している場合
     InsufficientCandidates(usize),
 
-    // I/O errors
+    // ## I/O関連エラー
+    
+    /// 設定ファイルエラー
+    /// 
+    /// 設定ファイルの読み込み・書き込みに失敗した場合
     ConfigurationFileError(String),
+    
+    /// 出力エラー
+    /// 
+    /// 結果の出力処理に失敗した場合
     OutputError(String),
 
-    // Generic errors
+    // ## 汎用エラー
+    
+    /// 内部エラー
+    /// 
+    /// 予期しない内部エラーが発生した場合
     InternalError(String),
+    
+    /// バリデーションエラー
+    /// 
+    /// 入力値の検証に失敗した場合
     ValidationError(String),
 }
 

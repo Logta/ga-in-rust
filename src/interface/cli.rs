@@ -1,18 +1,57 @@
+/// コマンドライン インターフェース（CLI）モジュール
+/// 
+/// このモジュールでは、遺伝的アルゴリズムシミュレーションのコマンドライン
+/// インターフェースを提供します。ユーザーがコマンドライン引数を通じて
+/// シミュレーションパラメータを指定できる機能を実装しています。
+
 use crate::core::errors::{GAError, GAResult};
 use crate::infrastructure::config::ConfigBuilder;
 use std::env;
 
+/// コマンドライン引数を表現する構造体
+/// 
+/// シミュレーションの設定パラメータをコマンドライン引数から受け取るための
+/// 構造体です。全てのフィールドはオプショナルで、指定されない場合は
+/// デフォルト値が使用されます。
+/// 
+/// # フィールド
+/// * `generations` - 実行する世代数
+/// * `population` - 個体数
+/// * `mutation_rate` - 突然変異率
+/// * `dna_length` - DNA長
+/// * `report_interval` - レポート間隔
+/// * `elite_size` - エリートサイズ
+/// * `help` - ヘルプ表示フラグ
 pub struct CliArgs {
+    /// 実行する世代数（--generations）
     pub generations: Option<usize>,
+    /// 個体数（--population）
     pub population: Option<usize>,
+    /// 突然変異率（--mutation-rate）
     pub mutation_rate: Option<f64>,
+    /// DNA長（--dna-length）
     pub dna_length: Option<usize>,
+    /// レポート間隔（--report-interval）
     pub report_interval: Option<usize>,
+    /// エリートサイズ（--elite-size）
     pub elite_size: Option<usize>,
+    /// ヘルプ表示フラグ（--help or -h）
     pub help: bool,
 }
 
 impl CliArgs {
+    /// コマンドライン引数を解析してCliArgsを作成
+    /// 
+    /// std::env::args()からコマンドライン引数を取得し、
+    /// 各オプションを解析してCliArgsインスタンスを作成します。
+    /// 
+    /// # 戻り値
+    /// 成功時は解析されたCliArgsインスタンス、失敗時はエラー
+    /// 
+    /// # エラー
+    /// * 無効な引数形式の場合
+    /// * 数値の解析に失敗した場合
+    /// * 必要な値が不足している場合
     pub fn parse() -> GAResult<Self> {
         let args: Vec<String> = env::args().collect();
         let mut cli_args = CliArgs {

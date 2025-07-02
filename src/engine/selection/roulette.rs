@@ -1,29 +1,69 @@
+/// ルーレット選択戦略の実装
+/// 
+/// ルーレット選択は、各個体の適応度に比例した確率で個体を選択する手法です。
+/// 適応度が高い個体ほど選択される確率が高くなりますが、適応度の低い個体にも
+/// 選択される可能性を残すことで、多様性を保持します。
+
 use crate::core::{errors::*, traits::*, types::*};
 use rand::{thread_rng, Rng};
 
-/// Roulette wheel selection strategy
+/// ルーレット選択戦略の実装構造体
+/// 
+/// ルーレット選択では、各個体の適応度に応じた選択確率を計算し、
+/// ランダムに個体を選択します。適応度の計算方法を選択可能です。
+/// 
+/// # フィールド
+/// * `use_squared_fitness` - 適応度を二乗するかどうか（選択圧の調整）
 #[derive(Debug, Clone)]
 pub struct RouletteSelection {
+    /// 適応度を二乗して計算するかどうか
+    /// 
+    /// trueの場合、適応度の差がより顕著になり選択圧が高まります。
+    /// falseの場合、線形な適応度を使用し選択圧が穏やかになります。
     use_squared_fitness: bool,
 }
 
 impl RouletteSelection {
+    /// デフォルトのルーレット選択を作成
+    /// 
+    /// デフォルトでは二乗適応度を使用し、選択圧を高めに設定します。
+    /// 
+    /// # 戻り値
+    /// 新しいRouletteSelectionインスタンス
     pub fn new() -> Self {
         Self {
             use_squared_fitness: true,
         }
     }
 
+    /// 線形適応度を使用するルーレット選択を作成
+    /// 
+    /// 適応度を二乗せず、元の値をそのまま使用します。
+    /// これにより、選択圧が穏やかになり多様性が保たれやすくなります。
+    /// 
+    /// # 戻り値
+    /// 線形適応度を使用するRouletteSelectionインスタンス
     pub fn with_linear_fitness() -> Self {
         Self {
             use_squared_fitness: false,
         }
     }
 
+    /// 適応度を計算
+    /// 
+    /// 設定に応じて、ポイントをそのまま使用するか二乗して使用するかを決定します。
+    /// 
+    /// # 引数
+    /// * `points` - 個体の獲得ポイント
+    /// 
+    /// # 戻り値
+    /// 計算された適応度値
     fn calculate_fitness(&self, points: Points) -> Fitness {
         if self.use_squared_fitness {
+            // 適応度を二乗することで選択圧を高める
             points * points
         } else {
+            // 線形な適応度を使用
             points
         }
     }
