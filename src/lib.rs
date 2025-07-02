@@ -38,7 +38,6 @@ pub mod simulation {
 pub mod ga;
 pub mod models;
 pub mod strategies;
-pub mod utils;
 
 // Re-export commonly used items
 pub use core::{errors::GAResult, traits::*, types::*};
