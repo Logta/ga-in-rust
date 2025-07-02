@@ -54,7 +54,7 @@ impl BaseModel for Agent {
         Agent {
             id: self.id,
             points: 0,
-            dna: format!("{}{}", head, tail),
+            dna: format!("{head}{tail}"),
             active: true,
         }
     }

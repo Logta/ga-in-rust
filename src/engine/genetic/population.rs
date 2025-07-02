@@ -168,7 +168,7 @@ impl<T: Agent> Population<T> {
         Ok(())
     }
 
-    pub fn apply_elitism(&mut self, offspring: &mut Vec<T>) -> GAResult<()> {
+    pub fn apply_elitism(&mut self, offspring: &mut [T]) -> GAResult<()> {
         if offspring.len() < self.elite_size {
             return Err(GAError::ValidationError(
                 "Offspring size is smaller than elite size".to_string(),

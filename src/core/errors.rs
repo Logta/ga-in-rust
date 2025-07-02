@@ -64,63 +64,61 @@ impl fmt::Display for GAError {
                 write!(f, "Population cannot be empty")
             }
             GAError::InvalidPopulationSize(size) => {
-                write!(f, "Invalid population size: {} (must be > 0)", size)
+                write!(f, "Invalid population size: {size} (must be > 0)")
             }
             GAError::InvalidDna(dna) => {
-                write!(f, "Invalid DNA string: '{}'", dna)
+                write!(f, "Invalid DNA string: '{dna}'")
             }
             GAError::InvalidDnaLength(length) => {
-                write!(f, "Invalid DNA length: {} (must be > 0)", length)
+                write!(f, "Invalid DNA length: {length} (must be > 0)")
             }
             GAError::InvalidDnaFormat(msg) => {
-                write!(f, "Invalid DNA format: {}", msg)
+                write!(f, "Invalid DNA format: {msg}")
             }
             GAError::InvalidMutationRate(rate) => {
                 write!(
                     f,
-                    "Invalid mutation rate: {} (must be between 0.0 and 1.0)",
-                    rate
+                    "Invalid mutation rate: {rate} (must be between 0.0 and 1.0)"
                 )
             }
             GAError::InvalidCrossoverPoint(point) => {
-                write!(f, "Invalid crossover point: {}", point)
+                write!(f, "Invalid crossover point: {point}")
             }
             GAError::InvalidEliteSize(size) => {
                 write!(
                     f,
-                    "Invalid elite size: {} (must be less than population size)",
-                    size
+                    "Invalid elite size: {size} (must be less than population size)"
                 )
             }
             GAError::InvalidGenerationCount(count) => {
-                write!(f, "Invalid generation count: {} (must be > 0)", count)
+                write!(f, "Invalid generation count: {count} (must be > 0)")
             }
             GAError::GameInitializationError(msg) => {
-                write!(f, "Game initialization error: {}", msg)
+                write!(f, "Game initialization error: {msg}")
             }
             GAError::GameExecutionError(msg) => {
-                write!(f, "Game execution error: {}", msg)
+                write!(f, "Game execution error: {msg}")
             }
             GAError::InvalidGameState(msg) => {
-                write!(f, "Invalid game state: {}", msg)
+                write!(f, "Invalid game state: {msg}")
             }
             GAError::SelectionError(msg) => {
-                write!(f, "Selection error: {}", msg)
+                write!(f, "Selection error: {msg}")
             }
             GAError::InsufficientCandidates(count) => {
-                write!(f, "Insufficient candidates for selection: {}", count)
+                write!(f, "Insufficient candidates for selection: {count}")
             }
             GAError::ConfigurationFileError(msg) => {
-                write!(f, "Configuration file error: {}", msg)
+                write!(f, "Configuration file error: {msg}")
             }
             GAError::OutputError(msg) => {
-                write!(f, "Output error: {}", msg)
+                write!(f, "Output error: {msg}")
             }
             GAError::InternalError(msg) => {
-                write!(f, "Internal error: {}", msg)
+                write!(f, "Internal error: {msg}")
             }
             GAError::ValidationError(msg) => {
-                write!(f, "Validation error: {}", msg)
+                write!(f, "Validation error: {msg}")
             }
         }
     }
@@ -144,7 +142,7 @@ pub mod validation {
     }
 
     pub fn validate_mutation_rate(rate: MutationRate) -> GAResult<()> {
-        if rate < 0.0 || rate > 1.0 {
+        if !(0.0..=1.0).contains(&rate) {
             Err(GAError::InvalidMutationRate(rate))
         } else {
             Ok(())

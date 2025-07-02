@@ -4,7 +4,7 @@
 /// シミュレーションを管理します。設定に基づいてゲームを実行し、
 /// 世代を重ねながら個体群の進化を観察します。
 use crate::core::errors::{GAError, GAResult};
-use crate::ga::ga::{create_next_generation, GAOperation};
+use crate::ga::algorithm::{create_next_generation, GAOperation};
 use crate::infrastructure::config::Config;
 use crate::models::game::{new_game, GameOperation};
 use crate::models::model::Agent;
@@ -95,7 +95,7 @@ impl Simulation {
         println!("\nInitial population:");
 
         for (i, dna) in game.get_dna_list().iter().enumerate() {
-            println!("Agent {:2}: {}", i, dna);
+            println!("Agent {i:2}: {dna}");
         }
         println!();
     }

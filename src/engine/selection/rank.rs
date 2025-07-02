@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use crate::core::{errors::*, traits::*, types::*};
 use rand::{thread_rng, Rng};
 
@@ -9,7 +10,7 @@ pub struct RankSelection {
 
 impl RankSelection {
     pub fn new(pressure: f64) -> GAResult<Self> {
-        if pressure < 1.0 || pressure > 2.0 {
+        if !(1.0..=2.0).contains(&pressure) {
             return Err(GAError::ValidationError(
                 "Selection pressure must be between 1.0 and 2.0".to_string(),
             ));

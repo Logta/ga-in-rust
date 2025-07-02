@@ -1,5 +1,5 @@
 use super::model::{BaseModel, Model, Points};
-use crate::ga::ga::GA;
+use crate::ga::algorithm::GA;
 use crate::strategies::utils::StrategyOperation;
 use rand::{thread_rng, Rng};
 

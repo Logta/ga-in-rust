@@ -1,1 +1,1 @@
-pub mod ga;
+pub mod algorithm;

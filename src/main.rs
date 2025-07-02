@@ -11,7 +11,7 @@ use std::process;
 /// アプリケーションのエントリーポイント
 fn main() {
     if let Err(e) = run() {
-        eprintln!("Error: {}", e);
+        eprintln!("Error: {e}");
         process::exit(1);
     }
 }

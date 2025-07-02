@@ -3,6 +3,7 @@
 /// トーナメント選択は、個体群からランダムに選んだ小グループ（トーナメント）の中で
 /// 最も適応度の高い個体を選択する手法です。選択圧を調整しやすく、
 /// 実装が簡単で効率的な選択手法として広く使用されています。
+#[allow(unused_imports)]
 use crate::core::{errors::*, traits::*, types::*};
 use rand::{thread_rng, Rng};
 

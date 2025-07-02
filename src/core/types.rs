@@ -1,7 +1,6 @@
 /// 遺伝的アルゴリズムの基本型定義
 ///
 /// 遺伝的アルゴリズムで使用される型エイリアスと定数を定義
-
 /// エージェントの一意識別子
 pub type AgentId = u64;
 
@@ -47,7 +46,6 @@ pub const DEFAULT_REPORT_INTERVAL: usize = 5_000;
 pub const DEFAULT_ELITE_SIZE: usize = 2;
 
 /// 囚人のジレンマゲームの報酬マトリックス
-
 /// 両者協力時の報酬
 pub const COOPERATE_COOPERATE_REWARD: Points = 3;
 
