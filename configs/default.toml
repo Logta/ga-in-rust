@@ -1,0 +1,105 @@
+# GA Prisoner's Dilemma - デフォルト設定
+# このファイルはサンプル設定です。実際の設定は用途に応じてカスタマイズしてください。
+
+[genetic]
+# 個体数 - シミュレーションに参加するエージェントの数
+population_size = 50
+
+# 世代数 - 進化を行う回数
+generations = 1000
+
+# 突然変異率 - DNA変化の確率 (0.0-1.0)
+mutation_rate = 0.01
+
+# エリート保存数 - 次世代に確実に生き残る優秀な個体の数
+elite_count = 2
+
+# DNA長 - 各個体の戦略を表すビット列の長さ
+dna_length = 8
+
+# 交叉タイプ - 親から子への遺伝子組み換え方法
+crossover_type = "single-point"  # "single-point", "two-point", "uniform"
+
+# 選択方式 - 親個体の選択方法
+selection_method = { type = "tournament", size = 3 }  # tournament, roulette, rank
+
+[simulation]
+# 1試合あたりのラウンド数
+rounds_per_match = 10
+
+# デフォルト戦略
+default_strategy = "tit-for-tat"
+
+# トーナメントタイプ
+tournament_type = "round-robin"  # "round-robin", "random-pairing", "swiss"
+
+# ペイオフ行列 - 囚人のジレンマの報酬構造
+[simulation.payoff_matrix]
+# R: 相互協力時の報酬
+reward = 3
+
+# T: 裏切り成功時の誘惑
+temptation = 5
+
+# S: 裏切られた時の愚か者の報酬  
+sucker = 0
+
+# P: 相互裏切り時の処罰
+punishment = 1
+
+# 注意: 囚人のジレンマの条件 T > R > P > S かつ 2R > T + S を満たす必要があります
+
+[output]
+# レポート出力間隔（世代数）
+report_interval = 100
+
+# 保存形式
+save_format = "json"  # "json", "csv", "toml"
+
+# 詳細統計を含めるか
+include_detailed_stats = true
+
+# 個体データを保存するか
+save_individual_data = false
+
+[performance]
+# 並列実行を有効にするか
+parallel_enabled = true
+
+# 使用スレッド数（0 = 自動検出）
+thread_count = 0
+
+# メモリ制限（MB、0 = 制限なし）
+memory_limit_mb = 1024
+
+# バッチサイズ（並列処理時のチャンクサイズ）
+batch_size = 100
+
+[logging]
+# ログレベル - "trace", "debug", "info", "warn", "error"
+level = "info"
+
+# JSON形式でログ出力するか
+json_format = false
+
+# スパン情報を含めるか（デバッグ用）
+include_spans = false
+
+# ファイル出力を有効にするか
+file_output = false
+
+# ログファイルパス（file_output = true の場合）
+file_path = "logs/simulation.log"
+
+[analysis]
+# 収束判定の閾値（適応度変化率）
+convergence_threshold = 0.01
+
+# 収束判定のウィンドウサイズ（世代数）
+convergence_window = 50
+
+# 早期停止を有効にするか
+early_stopping = true
+
+# 多様性の最小閾値
+minimum_diversity = 0.001

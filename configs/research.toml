@@ -1,0 +1,61 @@
+# 研究用設定
+# 詳細な分析とデータ収集を行う設定
+
+[genetic]
+population_size = 100
+generations = 3000
+mutation_rate = 0.01
+elite_count = 5
+dna_length = 12
+crossover_type = "uniform"
+selection_method = { type = "tournament", size = 5 }
+
+[simulation]
+rounds_per_match = 50  # 長期戦略の観察
+default_strategy = "random"  # ニュートラルな開始点
+
+# 標準的なペイオフ行列
+[simulation.payoff_matrix]
+reward = 3
+temptation = 5
+sucker = 0
+punishment = 1
+
+[output]
+report_interval = 100
+save_format = "json"
+include_detailed_stats = true
+save_individual_data = true  # 個体レベルのデータも保存
+
+[performance]
+parallel_enabled = true
+thread_count = 0  # 最大並列度
+memory_limit_mb = 2048
+
+[logging]
+level = "debug"  # 詳細ログ
+json_format = true
+include_spans = true
+file_output = true
+file_path = "logs/research_simulation.log"
+
+[analysis]
+convergence_threshold = 0.005
+convergence_window = 100
+early_stopping = false
+minimum_diversity = 0.001
+
+# 研究用の追加設定
+[research]
+# 統計データの詳細レベル
+statistics_detail_level = "maximum"
+
+# 世代ごとのスナップショット保存
+save_generation_snapshots = true
+snapshot_interval = 500
+
+# 戦略進化の追跡
+track_strategy_evolution = true
+
+# 系統樹の構築
+build_phylogeny = true

@@ -1,0 +1,35 @@
+# 協力的環境設定
+# 協力が促進されやすい環境での実験用設定
+
+[genetic]
+population_size = 40
+generations = 800
+mutation_rate = 0.008  # 低い突然変異率で安定性を重視
+elite_count = 4
+dna_length = 6
+
+[simulation]
+rounds_per_match = 25  # 長期的関係を重視
+default_strategy = "tit-for-tat"
+
+# 協力的ペイオフ行列
+[simulation.payoff_matrix]
+reward = 4      # 協力報酬を高く
+temptation = 5  # 裏切り誘惑は控えめ
+sucker = 1      # 裏切られても少し報酬
+punishment = 0  # 両者裏切りは厳しく
+
+[output]
+report_interval = 80
+include_detailed_stats = true
+
+[performance]
+parallel_enabled = true
+
+[logging]
+level = "info"
+
+[analysis]
+convergence_threshold = 0.015  # 緩やかな収束判定
+convergence_window = 40
+early_stopping = false  # 最後まで実行
