@@ -5,84 +5,53 @@
 ///
 /// ## アーキテクチャ
 ///
-/// ライブラリは以下の層構造で設計されています：
+/// ライブラリは以下のモジュール構造で設計されています：
 ///
-/// * **Core**: 基本的な型、トレイト、エラーハンドリング
-/// * **Engine**: 遺伝的アルゴリズムのエンジンとコンポーネント
-/// * **Domain**: ドメイン固有のモデルとロジック
-/// * **Infrastructure**: 設定、ログ、I/Oなどのインフラ機能
-/// * **Interface**: CLI、API等のユーザーインターフェース
+/// * **core**: 基本的な型、トレイト、バリデーション、乱数生成、ログ
+/// * **cli**: コマンドラインインターフェースと出力機能
+/// * **config**: 設定管理とファイル読み込み
+/// * **simulation**: シミュレーションエンジンと統計情報
+/// * **genetic**: 遺伝的アルゴリズムの実装
+/// * **strategies**: 囚人のジレンマ戦略の定義
 ///
 /// ## 使用例
 ///
-/// ```rust
-/// use ga_prisoners_dilemma::infrastructure::config::Config;
-/// use ga_prisoners_dilemma::domain::simulation::Simulation;
+/// ```rust,no_run
+/// use ga_prisoners_dilemma::config::Config;
+/// use ga_prisoners_dilemma::simulation::Simulation;
+/// use anyhow::Result;
 ///
-/// # fn main() -> ga_prisoners_dilemma::core::errors::GAResult<()> {
-/// let config = Config::new();
-/// let simulation = Simulation::new(config)?;
-/// let _result = simulation.run()?;
-/// # Ok(())
-/// # }
+/// #[tokio::main]
+/// async fn main() -> Result<()> {
+///     let config = Config::default();
+///     let mut simulation = Simulation::new(config, None)?;
+///     let result = simulation.run().await?;
+///     println!("{}", result.summary());
+///     Ok(())
+/// }
 /// ```
-/// 基本的な型、トレイト、エラーハンドリング
-///
-/// 遺伝的アルゴリズムの基盤となる型定義、共通トレイト、
-/// エラー処理機能を提供します。
+
+/// 基本的な型、トレイト、バリデーション、乱数生成、ログ
 pub mod core;
 
-/// 遺伝的アルゴリズムエンジンとコンポーネント
-///
-/// 選択戦略、交叉操作、個体群管理など、遺伝的アルゴリズムの
-/// 核となる機能を実装します。
-pub mod engine;
+/// コマンドラインインターフェースと出力機能
+pub mod cli;
 
-/// ドメイン固有のモデルとロジック
-///
-/// 囚人のジレンマゲームとシミュレーション実行に関する
-/// ドメインロジックを提供します。
-pub mod domain;
+/// 設定管理とファイル読み込み
+pub mod config;
 
-/// インフラストラクチャコンポーネント
-///
-/// 設定管理、ログ出力、ファイルI/Oなど、アプリケーションの
-/// 基盤機能を提供します。
-pub mod infrastructure;
+/// シミュレーションエンジンと統計情報
+pub mod simulation;
 
-/// ユーザーインターフェース
-///
-/// CLI、Web API等のユーザーとのインタラクション機能を
-/// 提供します。
-pub mod interface;
+/// 遺伝的アルゴリズムの実装
+pub mod genetic;
 
-// Legacy modules for backward compatibility
-#[deprecated(note = "Use infrastructure::config instead")]
-pub mod config {
-    pub use crate::infrastructure::config::*;
-}
-
-#[deprecated(note = "Use core::errors instead")]
-pub mod error {
-    pub use crate::core::errors::*;
-}
-
-#[deprecated(note = "Use interface::cli instead")]
-pub mod cli {
-    pub use crate::interface::cli::*;
-}
-
-#[deprecated(note = "Use domain::simulation instead")]
-pub mod simulation {
-    pub use crate::domain::simulation::*;
-}
-
-// Legacy modules that still need to be moved
-pub mod ga;
-pub mod models;
+/// 囚人のジレンマ戦略の定義
 pub mod strategies;
 
-// Re-export commonly used items
-pub use core::{errors::GAResult, traits::*, types::*};
-pub use engine::{Population, RankSelection, RouletteSelection, TournamentSelection};
-pub use infrastructure::config::Config;
+// よく使用されるアイテムの再エクスポート
+pub use core::{traits::*, types::*, validation::*, random::*, logging::*};
+pub use config::{Config, ConfigLoader};
+pub use simulation::{Simulation, SimulationStats, Environment, Choice, PayoffMatrix};
+pub use genetic::{Individual, Population, GeneticAlgorithm};
+pub use strategies::*;

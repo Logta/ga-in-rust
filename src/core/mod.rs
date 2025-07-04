@@ -1,13 +1,25 @@
-/// Core types and constants
+/// 遺伝的アルゴリズムのコア機能
+/// 
+/// 基本的な型定義、トレイト、バリデーション機能を提供
+
+/// 基本的な型定義と定数
 pub mod types;
 
-/// Core traits and interfaces
+/// コアトレイトとインターフェース
 pub mod traits;
 
-/// Error types and validation
-pub mod errors;
+/// バリデーション関数
+pub mod validation;
 
-// Re-export commonly used items
-pub use errors::{GAError, GAResult};
+/// SFMT高速乱数生成器
+pub mod random;
+
+/// ロギングシステム
+pub mod logging;
+
+// よく使用されるアイテムの再エクスポート
 pub use traits::*;
 pub use types::*;
+pub use validation::*;
+pub use random::{RandomGenerator, default_rng, init_default_rng};
+pub use logging::{LogConfig, LogLevel, init_logging};

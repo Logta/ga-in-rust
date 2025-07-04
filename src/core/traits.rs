@@ -152,7 +152,7 @@ pub trait GameStrategy<T: Agent> {
 pub trait GeneticAlgorithm<T: Agent> {
     fn population(&self) -> &[T];
     fn generation(&self) -> Generation;
-    fn evolve(&mut self) -> Result<(), crate::core::errors::GAError>;
+    fn evolve(&mut self) -> anyhow::Result<()>;
     fn best_agent(&self) -> Option<&T>;
     fn average_fitness(&self) -> f64;
 }

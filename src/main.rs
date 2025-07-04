@@ -2,37 +2,78 @@
 ///
 /// 遺伝的アルゴリズムで囚人のジレンマゲームの最適戦略を進化させるシミュレーション
 ///
-/// 使用例: `cargo run -- --generations 1000 --population 50 --mutation-rate 0.02`
-use ga_prisoners_dilemma::core::errors::GAResult;
-use ga_prisoners_dilemma::domain::simulation::Simulation;
-use ga_prisoners_dilemma::interface::cli::CliArgs;
+/// 使用例: `cargo run -- run --generations 1000 --population 50 --mutation-rate 0.02`
+use anyhow::{Context, Result};
+use clap::Parser;
+use ga_prisoners_dilemma::cli::app::Cli;
+use ga_prisoners_dilemma::cli::commands::*;
+use ga_prisoners_dilemma::core::{init_logging, LogConfig};
+use ga_prisoners_dilemma::config::ConfigLoader;
 use std::process;
+use tokio;
 
 /// アプリケーションのエントリーポイント
-fn main() {
-    if let Err(e) = run() {
-        eprintln!("Error: {e}");
+#[tokio::main]
+async fn main() {
+    // 基本的なロギングを設定（エラー処理前）
+    let _ = init_logging(&LogConfig::default());
+    
+    if let Err(e) = run().await {
+        eprintln!("❌ エラー: {}", e);
+        
+        // エラーチェーンを表示
+        let mut source = e.source();
+        while let Some(err) = source {
+            eprintln!("   原因: {}", err);
+            source = err.source();
+        }
+        
         process::exit(1);
     }
 }
 
 /// メイン実行ロジック
-fn run() -> GAResult<()> {
+async fn run() -> Result<()> {
     // コマンドライン引数を解析
-    let args = CliArgs::parse()?;
+    let cli = Cli::parse();
 
-    // ヘルプが要求された場合は表示して終了
-    if args.help {
-        CliArgs::print_help();
-        return Ok(());
+    // ロギングシステムの初期化
+    let log_config = if cli.quiet {
+        LogConfig::default()
+    } else {
+        LogConfig::development()
+    };
+    
+    init_logging(&log_config)
+        .context("ロギングシステムの初期化に失敗しました")?;
+
+    tracing::info!("ga-prisoners-dilemma v{} を開始します", env!("CARGO_PKG_VERSION"));
+    
+    // 設定を読み込み
+    let config_loader = ConfigLoader::new();
+    let config = config_loader.load(cli.config.as_deref())
+        .context("設定の読み込みに失敗しました")?;
+    
+    tracing::debug!("設定が読み込まれました: {:?}", config);
+
+    // コマンドに応じて処理を分岐
+    match &cli.command {
+        ga_prisoners_dilemma::cli::app::Commands::Run(args) => {
+            handle_run_command(args.clone()).await
+                .context("runコマンドの実行に失敗しました")?;
+        }
+        ga_prisoners_dilemma::cli::app::Commands::Config { action } => {
+            config::execute_config(action.clone()).await
+                .context("configコマンドの実行に失敗しました")?;
+        }
+        ga_prisoners_dilemma::cli::app::Commands::Init { output, format } => {
+            println!("初期化コマンドが実行されました（未実装）: {:?}, {:?}", output, format);
+        }
+        _ => {
+            println!("このコマンドはまだ実装されていません");
+        }
     }
 
-    // 設定を構築
-    let config = args.to_config_builder().build()?;
-
-    // シミュレーションを作成・実行
-    let simulation = Simulation::new(config)?;
-    let _result = simulation.run()?;
-
+    tracing::info!("アプリケーションが正常に終了しました");
     Ok(())
 }
