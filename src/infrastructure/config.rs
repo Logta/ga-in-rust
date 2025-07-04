@@ -20,6 +20,7 @@ use std::fmt;
 /// * `dna_length` - DNA（戦略）の長さ
 /// * `report_interval` - 進捗報告の間隔
 /// * `elite_size` - エリート保存する個体数
+/// * `strategy` - 使用する戦略
 #[derive(Debug, Clone)]
 pub struct Config {
     /// 実行する世代数
@@ -62,6 +63,12 @@ pub struct Config {
     /// 各世代で確実に次世代に引き継がれる優秀な個体の数です。
     /// 多すぎると多様性が失われ、少なすぎると良い解が失われる可能性があります。
     pub elite_size: usize,
+
+    /// 使用する戦略
+    ///
+    /// ゲームで使用する戦略の名前です。
+    /// 利用可能な戦略は strategy_selector で定義されています。
+    pub strategy: String,
 }
 
 impl Config {
@@ -81,6 +88,7 @@ impl Config {
             dna_length: DEFAULT_DNA_LENGTH,
             report_interval: DEFAULT_REPORT_INTERVAL,
             elite_size: DEFAULT_ELITE_SIZE,
+            strategy: "roulette".to_string(),
         }
     }
 
@@ -170,6 +178,11 @@ impl ConfigBuilder {
 
     pub fn elite_size(mut self, size: usize) -> Self {
         self.config.elite_size = size;
+        self
+    }
+
+    pub fn strategy(mut self, strategy: String) -> Self {
+        self.config.strategy = strategy;
         self
     }
 

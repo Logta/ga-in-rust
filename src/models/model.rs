@@ -14,6 +14,7 @@ pub trait BaseModel: Clone {
     fn get_dna_length(&self) -> usize;
     fn get_dna_sum(&self) -> u64;
     fn get_dna(&self) -> &str;
+    fn get_id(&self) -> AgentId;
     fn new(id: AgentId, dna: Dna) -> Self;
 }
 
@@ -84,6 +85,10 @@ impl BaseModel for Agent {
 
     fn get_dna(&self) -> &str {
         &self.dna
+    }
+
+    fn get_id(&self) -> AgentId {
+        self.id
     }
 
     fn new(id: AgentId, dna: Dna) -> Self {

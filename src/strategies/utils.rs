@@ -7,12 +7,11 @@ pub enum Choice {
     Defect,
 }
 
-pub trait StrategyOperation<T>
+pub trait StrategyOperation<T>: Clone
 where
     T: BaseModel,
 {
     fn play_match(&self, agent1: &T, agent2: &T) -> (T, T);
-    fn new() -> Self;
 }
 
 #[derive(Clone)]
@@ -44,10 +43,6 @@ where
             agent2.with_points(agent2.get_points() + points2),
         )
     }
-
-    fn new() -> Self {
-        Self {}
-    }
 }
 
 impl<T> StrategyOperation<T> for RouletteSelectionStrategy
@@ -66,13 +61,9 @@ where
             agent2.with_points(agent2.get_points() + points2),
         )
     }
-
-    fn new() -> Self {
-        Self {}
-    }
 }
 
-fn calculate_payoff(my_choice: &Choice, opponent_choice: &Choice) -> u64 {
+pub fn calculate_payoff(my_choice: &Choice, opponent_choice: &Choice) -> u64 {
     match (my_choice, opponent_choice) {
         (Choice::Cooperate, Choice::Cooperate) => 3,
         (Choice::Cooperate, Choice::Defect) => 0,

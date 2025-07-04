@@ -20,6 +20,7 @@ use std::env;
 /// * `dna_length` - DNA長
 /// * `report_interval` - レポート間隔
 /// * `elite_size` - エリートサイズ
+/// * `strategy` - 使用する戦略
 /// * `help` - ヘルプ表示フラグ
 pub struct CliArgs {
     /// 実行する世代数（--generations）
@@ -34,6 +35,8 @@ pub struct CliArgs {
     pub report_interval: Option<usize>,
     /// エリートサイズ（--elite-size）
     pub elite_size: Option<usize>,
+    /// 使用する戦略（--strategy）
+    pub strategy: Option<String>,
     /// ヘルプ表示フラグ（--help or -h）
     pub help: bool,
 }
@@ -60,6 +63,7 @@ impl CliArgs {
             dna_length: None,
             report_interval: None,
             elite_size: None,
+            strategy: None,
             help: false,
         };
 
@@ -135,6 +139,15 @@ impl CliArgs {
                         GAError::ValidationError("Invalid elite size value".to_string())
                     })?);
                 }
+                "-s" | "--strategy" => {
+                    i += 1;
+                    if i >= args.len() {
+                        return Err(GAError::ValidationError(
+                            "Missing value for strategy".to_string(),
+                        ));
+                    }
+                    cli_args.strategy = Some(args[i].clone());
+                }
                 _ => {
                     return Err(GAError::ValidationError(format!(
                         "Unknown argument: {}",
@@ -169,6 +182,9 @@ impl CliArgs {
         if let Some(elite_size) = self.elite_size {
             builder = builder.elite_size(elite_size);
         }
+        if let Some(strategy) = self.strategy {
+            builder = builder.strategy(strategy);
+        }
 
         builder
     }
@@ -186,11 +202,24 @@ impl CliArgs {
         println!("    -d, --dna-length <NUM>       DNA string length [default: 6]");
         println!("    -r, --report-interval <NUM>  Report every N generations [default: 5000]");
         println!("    -e, --elite-size <NUM>       Number of elite individuals [default: 2]");
+        println!("    -s, --strategy <NAME>        Strategy to use [default: roulette]");
         println!("    -h, --help                   Print this help message");
+        println!();
+        println!("AVAILABLE STRATEGIES:");
+        println!("    roulette        - ルーレット選択（既存の戦略）");
+        println!("    threshold       - 閾値選択（既存の戦略）");
+        println!("    tft             - Tit-for-Tat（直接互恵）");
+        println!("    gtft            - Generous Tit-for-Tat（寛容な直接互恵）");
+        println!("    pavlov          - Pavlov（Win-Stay, Lose-Shift）");
+        println!("    reputation      - 評判ベース戦略（間接互恵）");
+        println!("    image-scoring   - イメージスコアリング（間接互恵）");
+        println!("    standing        - スタンディング戦略（間接互恵）");
         println!();
         println!("EXAMPLES:");
         println!("    ga_prisoners_dilemma");
         println!("    ga_prisoners_dilemma -g 10000 -p 50 -m 0.05");
         println!("    ga_prisoners_dilemma --population 100 --mutation-rate 0.02");
+        println!("    ga_prisoners_dilemma -s tft --generations 1000");
+        println!("    ga_prisoners_dilemma --strategy reputation -p 30");
     }
 }

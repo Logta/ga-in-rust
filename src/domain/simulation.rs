@@ -8,7 +8,8 @@ use crate::ga::algorithm::{create_next_generation, GAOperation};
 use crate::infrastructure::config::Config;
 use crate::models::game::{new_game, GameOperation};
 use crate::models::model::Agent;
-use crate::strategies::utils::RouletteSelectionStrategy;
+use crate::strategies::strategy_selector::StrategySelector;
+use crate::strategies::dynamic_strategy::DynamicStrategy;
 
 /// 遺伝的アルゴリズムシミュレーションの管理構造体
 ///
@@ -44,13 +45,20 @@ impl Simulation {
         Ok(Self { config })
     }
 
+
     pub fn run(&self) -> GAResult<SimulationResult> {
-        let mut game = new_game::<Agent, RouletteSelectionStrategy>(
+        // 指定された戦略を取得
+        let strategy_type = StrategySelector::get_default_strategy(&self.config.strategy)
+            .ok_or_else(|| GAError::ValidationError(format!("Unknown strategy: {}", self.config.strategy)))?;
+        
+        let strategy = DynamicStrategy::from_strategy_type(&strategy_type);
+        
+        let mut game = new_game::<Agent, DynamicStrategy>(
             self.config.population,
             self.config.mutation_rate,
             self.config.rounds_per_generation,
             self.config.dna_length,
-            RouletteSelectionStrategy {},
+            strategy.clone(),
         );
 
         self.print_header(&game);
@@ -68,7 +76,7 @@ impl Simulation {
                 results.push(generation_stats);
             }
 
-            game = create_next_generation(ga_result, RouletteSelectionStrategy {});
+            game = create_next_generation(ga_result, strategy.clone());
         }
 
         let final_stats = self.collect_final_stats(&game)?;
