@@ -40,7 +40,7 @@ serde_yaml = "0.9"
 toml = "0.8"
 
 # UI & Progress
-indicatif = { version = "0.17", features = ["rayon"] }
+indicatif = { version = "0.17" }
 colored = "2.1"
 console = "0.15"
 dialoguer = "0.11"
@@ -51,7 +51,6 @@ anyhow = "1.0"
 # Utilities
 rayon = "1.10"
 dirs = "5.0"
-which = "6.0"
 
 # Logging
 tracing = "0.1"
@@ -62,8 +61,8 @@ sfmt = "0.7"
 rand = { version = "0.8", features = ["small_rng"] }
 rand_chacha = "0.3"
 
-# 非同期ランタイム
-tokio = { version = "1.46", features = ["full"] }
+# 非同期ランタイム - 必要な機能のみ
+tokio = { version = "1.46", features = ["rt", "rt-multi-thread", "macros", "fs"] }
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
@@ -85,10 +84,11 @@ strip = "symbols"
 overflow-checks = false
 
 [profile.dev]
-opt-level = 0
-debug = true
+opt-level = 1  # 軽い最適化でビルド時間と実行速度のバランスを取る
+debug = 1      # デバッグ情報を減らしてビルド時間短縮
 overflow-checks = true
 incremental = true
+split-debuginfo = "unpacked"  # デバッグ情報を分離してリンク時間短縮
 
 [profile.test]
 opt-level = 1

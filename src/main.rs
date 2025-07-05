@@ -15,9 +15,6 @@ use tokio;
 /// アプリケーションのエントリーポイント
 #[tokio::main]
 async fn main() {
-    // 基本的なロギングを設定（エラー処理前）
-    let _ = init_logging(&LogConfig::default());
-    
     if let Err(e) = run().await {
         eprintln!("❌ エラー: {}", e);
         

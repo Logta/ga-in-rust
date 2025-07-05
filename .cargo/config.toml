@@ -1,0 +1,20 @@
+# Cargoビルド設定
+
+[build]
+# 並列ジョブ数を設定（CPUコア数に応じて調整）
+jobs = 8
+
+[target.x86_64-unknown-linux-gnu]
+# リンカーの最適化
+rustflags = [
+    "-C", "target-cpu=native",       # ネイティブCPU最適化
+    "-C", "codegen-units=16",        # 並列コンパイルを有効化
+]
+
+[profile.dev.package."*"]
+# 依存関係のビルドを最適化（開発ビルドでも）
+opt-level = 2
+debug = false
+
+[registries.crates-io]
+protocol = "sparse"  # 高速なレジストリプロトコルを使用

@@ -102,12 +102,20 @@ impl GeneticAlgorithm {
             }
         }
         
-        // 新しい個体群を作成
-        let mut new_population = Population::new(0, self.config.dna_length)?; // 空の個体群
-        new_population.replace_with(new_individuals)?;
+        // エリート個体を取得
+        let elite_individuals = old_population.get_elite(self.config.elite_count);
         
-        // エリート保存
-        operations::apply_elitism(&old_population, &mut new_population, self.config.elite_count)?;
+        // エリート + 子個体で新しい個体群を構成
+        let mut all_individuals = elite_individuals;
+        all_individuals.extend(new_individuals);
+        
+        // IDを再設定
+        for (i, individual) in all_individuals.iter_mut().enumerate() {
+            *individual = Individual::new(i, individual.dna().to_string());
+        }
+        
+        // 新しい個体群を作成
+        let new_population = Population::from_individuals(all_individuals)?;
         
         // 個体群を置き換え
         self.population = new_population;

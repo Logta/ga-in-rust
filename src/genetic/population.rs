@@ -22,6 +22,11 @@ impl Population {
         Ok(Self { individuals })
     }
     
+    /// 既存の個体群から個体群を作成
+    pub fn from_individuals(individuals: Vec<Individual>) -> Result<Self> {
+        Ok(Self { individuals })
+    }
+    
     /// 個体群のサイズを取得
     pub fn size(&self) -> usize {
         self.individuals.len()

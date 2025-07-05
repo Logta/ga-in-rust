@@ -3,19 +3,10 @@ use anyhow::{Context, Result};
 use crate::cli::app::RunArgs;
 use crate::config::{Config, ConfigLoader};
 use crate::simulation::Simulation;
-use crate::core::logging::{init_logging, LogConfig};
 use std::path::Path;
 
 /// 実行コマンドを処理
 pub async fn handle_run_command(args: RunArgs) -> Result<()> {
-    // ロギングの初期化
-    let log_config = if args.dry_run {
-        LogConfig::development()
-    } else {
-        LogConfig::default()
-    };
-    init_logging(&log_config).context("ロギングの初期化に失敗しました")?;
-
     // 設定の読み込み
     let mut config = if let Some(config_path) = &args.config {
         Config::from_file(config_path)
