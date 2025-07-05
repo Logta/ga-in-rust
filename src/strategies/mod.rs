@@ -46,6 +46,8 @@ pub enum BasicStrategy {
     Random,
     /// Pavlov戦略（勝てば続ける、負ければ変える）
     Pavlov,
+    /// 一般化互恵戦略
+    GeneralizedReciprocity,
 }
 
 impl Strategy for BasicStrategy {
@@ -56,6 +58,7 @@ impl Strategy for BasicStrategy {
             BasicStrategy::TitForTat => "tit-for-tat",
             BasicStrategy::Random => "random",
             BasicStrategy::Pavlov => "pavlov",
+            BasicStrategy::GeneralizedReciprocity => "generalized-reciprocity",
         }
     }
     
@@ -66,6 +69,7 @@ impl Strategy for BasicStrategy {
             BasicStrategy::TitForTat => "相手の前回の行動を真似る戦略",
             BasicStrategy::Random => "ランダムに行動を選択する戦略",
             BasicStrategy::Pavlov => "勝てば続ける、負ければ変える戦略",
+            BasicStrategy::GeneralizedReciprocity => "グループ全体への貢献と恩恵を考慮する一般化互恵戦略",
         }
     }
     
@@ -76,6 +80,7 @@ impl Strategy for BasicStrategy {
             BasicStrategy::TitForTat => TitForTat.decide(history, round),
             BasicStrategy::Random => Random.decide(history, round),
             BasicStrategy::Pavlov => Pavlov.decide(history, round),
+            BasicStrategy::GeneralizedReciprocity => GeneralizedReciprocity::default().decide(history, round),
         }
     }
 }
@@ -92,6 +97,7 @@ impl StrategySelector {
             BasicStrategy::TitForTat,
             BasicStrategy::Random,
             BasicStrategy::Pavlov,
+            BasicStrategy::GeneralizedReciprocity,
         ]
     }
     
