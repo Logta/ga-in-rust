@@ -69,6 +69,14 @@ impl GeneralizedReciprocity {
     pub fn get_benefit_record(&self, member_id: &str) -> Option<&GroupBenefit> {
         self.group_benefits.get(member_id)
     }
+    
+    /// グループ全体の恩恵バランスを計算
+    /// 正の値：グループから多く受け取っている、負の値：グループに多く与えている
+    pub fn calculate_group_benefit_balance(&self) -> f64 {
+        self.group_benefits.values()
+            .map(|benefit| benefit.benefit_balance())
+            .sum()
+    }
 }
 
 impl Strategy for GeneralizedReciprocity {
@@ -81,8 +89,16 @@ impl Strategy for GeneralizedReciprocity {
     }
     
     fn decide(&self, _history: &[(Choice, Choice)], _round: usize) -> Choice {
-        // TODO: 実装予定
-        Choice::Cooperate
+        // 一般化互恵の判断ロジック：
+        // グループ全体の恩恵バランスを考慮して協力判断
+        let balance = self.calculate_group_benefit_balance();
+        
+        // バランスが閾値以下なら協力（まだ十分に恩恵を受けていない、または多く与えている）
+        if balance <= self.cooperation_threshold {
+            Choice::Cooperate
+        } else {
+            Choice::Defect
+        }
     }
 }
 
@@ -182,5 +198,78 @@ mod tests {
     fn test_nonexistent_member_record() {
         let strategy = GeneralizedReciprocity::default();
         assert!(strategy.get_benefit_record("nonexistent").is_none());
+    }
+
+    #[test]
+    fn test_calculate_group_benefit_balance_empty() {
+        let strategy = GeneralizedReciprocity::default();
+        assert_eq!(strategy.calculate_group_benefit_balance(), 0.0);
+    }
+
+    #[test]
+    fn test_calculate_group_benefit_balance_single_member() {
+        let mut strategy = GeneralizedReciprocity::default();
+        strategy.record_received_benefit("member1", 5.0);
+        strategy.record_given_benefit("member1", 2.0);
+        
+        // バランス = 5.0 - 2.0 = 3.0（正の値：受け取り超過）
+        assert_eq!(strategy.calculate_group_benefit_balance(), 3.0);
+    }
+
+    #[test]
+    fn test_calculate_group_benefit_balance_multiple_members() {
+        let mut strategy = GeneralizedReciprocity::default();
+        
+        // member1: 受恩3.0, 与恩1.0 -> バランス+2.0
+        strategy.record_received_benefit("member1", 3.0);
+        strategy.record_given_benefit("member1", 1.0);
+        
+        // member2: 受恩1.0, 与恩4.0 -> バランス-3.0
+        strategy.record_received_benefit("member2", 1.0);
+        strategy.record_given_benefit("member2", 4.0);
+        
+        // 全体バランス = 2.0 + (-3.0) = -1.0（負の値：与え超過）
+        assert_eq!(strategy.calculate_group_benefit_balance(), -1.0);
+    }
+
+    #[test]
+    fn test_decision_with_low_balance_cooperates() {
+        let mut strategy = GeneralizedReciprocity::new(1.0); // 閾値1.0
+        
+        // バランス = -0.5（与え超過）-> 協力
+        strategy.record_received_benefit("member1", 1.0);
+        strategy.record_given_benefit("member1", 1.5);
+        
+        assert_eq!(strategy.decide(&[], 0), Choice::Cooperate);
+    }
+
+    #[test]
+    fn test_decision_with_high_balance_defects() {
+        let mut strategy = GeneralizedReciprocity::new(1.0); // 閾値1.0
+        
+        // バランス = 2.0（受け取り超過）-> 裏切り
+        strategy.record_received_benefit("member1", 3.0);
+        strategy.record_given_benefit("member1", 1.0);
+        
+        assert_eq!(strategy.decide(&[], 0), Choice::Defect);
+    }
+
+    #[test]
+    fn test_decision_at_threshold_cooperates() {
+        let mut strategy = GeneralizedReciprocity::new(1.0); // 閾値1.0
+        
+        // バランス = 1.0（閾値と同じ）-> 協力
+        strategy.record_received_benefit("member1", 2.0);
+        strategy.record_given_benefit("member1", 1.0);
+        
+        assert_eq!(strategy.decide(&[], 0), Choice::Cooperate);
+    }
+
+    #[test]
+    fn test_decision_empty_benefits_cooperates() {
+        let strategy = GeneralizedReciprocity::new(0.5); // 閾値0.5
+        
+        // 恩恵記録なし（バランス = 0.0）-> 協力
+        assert_eq!(strategy.decide(&[], 0), Choice::Cooperate);
     }
 }
