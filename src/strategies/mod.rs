@@ -11,6 +11,7 @@ mod always_defect;
 mod tit_for_tat;
 mod random;
 mod pavlov;
+mod generalized_reciprocity;
 
 // 公開する型
 pub use always_cooperate::AlwaysCooperate;
@@ -18,6 +19,7 @@ pub use always_defect::AlwaysDefect;
 pub use tit_for_tat::TitForTat;
 pub use random::Random;
 pub use pavlov::Pavlov;
+pub use generalized_reciprocity::GeneralizedReciprocity;
 
 /// 戦略の基本トレイト
 pub trait Strategy {
