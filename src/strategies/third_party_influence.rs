@@ -150,6 +150,18 @@ impl ThirdPartyInfluence {
         
         weighted_score / total_influence
     }
+    
+    /// 第三者情報を統合して総合的な協力判断スコアを計算
+    fn calculate_combined_influence_score(&self, target_id: &str) -> f64 {
+        let observation_rate = self.calculate_cooperation_rate(target_id);
+        let reputation_score = self.calculate_reputation_score(target_id);
+        
+        // 観察情報と評判情報の重み（将来的にはパラメータ化可能）
+        let observation_weight = 0.6;
+        let reputation_weight = 0.4;
+        
+        observation_rate * observation_weight + reputation_score * reputation_weight
+    }
 }
 
 impl Strategy for ThirdPartyInfluence {
@@ -161,9 +173,42 @@ impl Strategy for ThirdPartyInfluence {
         "第三者からの評判情報と社会的圧力を考慮する戦略"
     }
     
-    fn decide(&self, _history: &[(Choice, Choice)], _round: usize) -> Choice {
-        // TODO: 実装予定
-        Choice::Cooperate
+    fn decide(&self, history: &[(Choice, Choice)], _round: usize) -> Choice {
+        // 第三者影響の判断ロジック：
+        // 1. 直接相互作用の履歴から相手IDを推定（簡略化）
+        // 2. 第三者からの情報を統合して協力判断スコアを計算
+        // 3. 閾値と比較して協力/裏切りを決定
+        
+        // 現在のシンプルなシミュレーションでは相手IDが直接取得できないため、
+        // 履歴ベースの判断を行う（将来的にはマルチエージェント環境で改善）
+        if history.is_empty() {
+            // 初回は協力（第三者情報がない状態）
+            return Choice::Cooperate;
+        }
+        
+        // 履歴から相手の協力率を計算（直接的な判断材料として）
+        let opponent_cooperation_rate = history.iter()
+            .map(|(_, opponent_choice)| match opponent_choice {
+                Choice::Cooperate => 1.0,
+                Choice::Defect => 0.0,
+            })
+            .sum::<f64>() / history.len() as f64;
+        
+        // 第三者情報が利用可能な場合は統合判断、そうでなければ直接履歴を使用
+        let decision_score = if self.observations.is_empty() && self.reputation_messages.is_empty() {
+            opponent_cooperation_rate
+        } else {
+            // 実際の実装では相手IDが必要だが、ここでは一般的な統合スコアを使用
+            let combined_score = self.calculate_combined_influence_score("opponent");
+            // 直接履歴と第三者情報の統合
+            combined_score * 0.7 + opponent_cooperation_rate * 0.3
+        };
+        
+        if decision_score >= self.cooperation_threshold {
+            Choice::Cooperate
+        } else {
+            Choice::Defect
+        }
     }
 }
 
@@ -441,5 +486,134 @@ mod tests {
         
         // 重み付き平均 = (0.8 * 0.6 + 0.2 * 0.4) / (0.6 + 0.4) = (0.48 + 0.08) / 1.0 = 0.56
         assert_eq!(strategy.calculate_reputation_score("subject1"), 0.56);
+    }
+
+    #[test]
+    fn test_calculate_combined_influence_score_no_info() {
+        let strategy = ThirdPartyInfluence::default();
+        
+        // 観察も評判もない場合：0.5 * 0.6 + 0.5 * 0.4 = 0.5
+        assert_eq!(strategy.calculate_combined_influence_score("unknown"), 0.5);
+    }
+
+    #[test]
+    fn test_calculate_combined_influence_score_with_observation_only() {
+        let mut strategy = ThirdPartyInfluence::default();
+        
+        // 観察情報のみ：協力率 1.0
+        strategy.add_observation(ObservationRecord::new(
+            "obs1".to_string(), Choice::Cooperate, "target".to_string(), 1.0
+        ));
+        
+        // 統合スコア = 1.0 * 0.6 + 0.5 * 0.4 = 0.8
+        assert_eq!(strategy.calculate_combined_influence_score("target"), 0.8);
+    }
+
+    #[test]
+    fn test_calculate_combined_influence_score_with_reputation_only() {
+        let mut strategy = ThirdPartyInfluence::default();
+        
+        // 評判情報のみ：評判スコア 0.2
+        strategy.receive_reputation_message(ReputationMessage::new(
+            "sender1".to_string(),
+            "target".to_string(),
+            0.2,
+            1.0
+        ));
+        
+        // 統合スコア = 0.5 * 0.6 + 0.2 * 0.4 = 0.38
+        assert_eq!(strategy.calculate_combined_influence_score("target"), 0.38);
+    }
+
+    #[test]
+    fn test_calculate_combined_influence_score_with_both() {
+        let mut strategy = ThirdPartyInfluence::default();
+        
+        // 観察情報：協力率 0.8
+        strategy.add_observation(ObservationRecord::new(
+            "obs1".to_string(), Choice::Cooperate, "target".to_string(), 0.8
+        ));
+        strategy.add_observation(ObservationRecord::new(
+            "obs2".to_string(), Choice::Defect, "target".to_string(), 0.2
+        ));
+        // 協力率 = 0.8 / (0.8 + 0.2) = 0.8
+        
+        // 評判情報：評判スコア 0.3
+        strategy.receive_reputation_message(ReputationMessage::new(
+            "sender1".to_string(),
+            "target".to_string(),
+            0.3,
+            1.0
+        ));
+        
+        // 統合スコア = 0.8 * 0.6 + 0.3 * 0.4 = 0.48 + 0.12 = 0.6
+        assert_eq!(strategy.calculate_combined_influence_score("target"), 0.6);
+    }
+
+    #[test]
+    fn test_decision_no_history_cooperates() {
+        let strategy = ThirdPartyInfluence::default();
+        
+        // 履歴なし（初回）-> 協力
+        assert_eq!(strategy.decide(&[], 0), Choice::Cooperate);
+    }
+
+    #[test]
+    fn test_decision_no_third_party_info_uses_history() {
+        let strategy = ThirdPartyInfluence::new(0.6); // 閾値 0.6
+        
+        // 相手が全て協力（協力率 1.0）-> 協力
+        let history = vec![
+            (Choice::Cooperate, Choice::Cooperate),
+            (Choice::Cooperate, Choice::Cooperate),
+        ];
+        assert_eq!(strategy.decide(&history, 2), Choice::Cooperate);
+        
+        // 相手が全て裏切り（協力率 0.0）-> 裏切り
+        let history = vec![
+            (Choice::Cooperate, Choice::Defect),
+            (Choice::Cooperate, Choice::Defect),
+        ];
+        assert_eq!(strategy.decide(&history, 2), Choice::Defect);
+    }
+
+    #[test]
+    fn test_decision_with_third_party_info() {
+        let mut strategy = ThirdPartyInfluence::new(0.5); // 閾値 0.5
+        
+        // 第三者情報を追加：悪い評判
+        strategy.receive_reputation_message(ReputationMessage::new(
+            "observer".to_string(),
+            "opponent".to_string(),
+            0.1, // 悪い評判
+            1.0
+        ));
+        
+        // 直接履歴は協力的だが第三者情報が悪い
+        let history = vec![
+            (Choice::Cooperate, Choice::Cooperate),
+        ];
+        
+        // 統合スコア = combined_score * 0.7 + direct_rate * 0.3
+        // combined_score = 0.5 * 0.6 + 0.1 * 0.4 = 0.34
+        // 統合判断 = 0.34 * 0.7 + 1.0 * 0.3 = 0.238 + 0.3 = 0.538
+        // 0.538 > 0.5 なので協力
+        assert_eq!(strategy.decide(&history, 1), Choice::Cooperate);
+    }
+
+    #[test]
+    fn test_decision_at_threshold() {
+        let mut strategy = ThirdPartyInfluence::new(0.5); // 閾値 0.5
+        
+        // スコアがちょうど閾値になるような設定
+        let history = vec![
+            (Choice::Cooperate, Choice::Cooperate),
+            (Choice::Cooperate, Choice::Defect),
+        ];
+        // 直接協力率 = 0.5
+        
+        // 第三者情報なしなので直接履歴のみ使用
+        // 0.5 >= 0.5 なので協力
+        assert_eq!(strategy.decide(&history, 2), Choice::Cooperate);
     }
 }
