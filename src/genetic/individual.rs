@@ -167,18 +167,20 @@ mod tests {
 
     #[test]
     fn test_choice() -> Result<()> {
+        // 新しい仕様: 最初の2ビットが戦略を決定
+        // "10..." -> TitForTat戦略
         let individual = Individual::new(1, "101010".to_string());
         
-        // ラウンド0: DNA[0] = '1' -> Cooperate
+        // TitForTat: 初回は協力
         let choice = individual.choose(&[], 0)?;
         assert_eq!(choice, Choice::Cooperate);
         
-        // ラウンド1: DNA[1] = '0' -> Defect
-        let choice = individual.choose(&[], 1)?;
+        // TitForTat: 相手が裏切ったので裏切る
+        let choice = individual.choose(&[Choice::Defect], 1)?;
         assert_eq!(choice, Choice::Defect);
         
-        // ラウンド6: DNA[6 % 6] = DNA[0] = '1' -> Cooperate
-        let choice = individual.choose(&[], 6)?;
+        // TitForTat: 相手が協力したので協力
+        let choice = individual.choose(&[Choice::Defect, Choice::Cooperate], 2)?;
         assert_eq!(choice, Choice::Cooperate);
 
         Ok(())
@@ -190,7 +192,7 @@ mod tests {
         let individual2 = Individual::new(2, "111000".to_string());
         
         let distance = individual1.dna_distance(&individual2)?;
-        assert_eq!(distance, 3); // 3箇所で異なる
+        assert_eq!(distance, 2); // 2箇所で異なる (位置1と位置4)
         
         // 同じDNAの場合
         let individual3 = Individual::new(3, "101010".to_string());
