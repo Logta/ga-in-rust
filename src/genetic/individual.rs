@@ -191,4 +191,20 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn test_dna_to_strategy_mapping() -> Result<()> {
+        // DNAビットパターンから戦略を選択するテスト
+        // 00: AlwaysDefect
+        // 01: AlwaysCooperate  
+        // 10: TitForTat
+        // 11: Pavlov
+        let individual = Individual::new(1, "00011011".to_string());
+        
+        // まだ実装していないのでコンパイルエラーになる
+        // let strategy = individual.get_strategy_from_dna(0)?; // DNA[0:1] = "00"
+        // assert_eq!(strategy.name(), "always-defect");
+        
+        Ok(())
+    }
 }
