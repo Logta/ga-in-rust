@@ -12,6 +12,7 @@ mod tit_for_tat;
 mod random;
 mod pavlov;
 mod generalized_reciprocity;
+mod third_party_influence;
 
 // 公開する型
 pub use always_cooperate::AlwaysCooperate;
@@ -20,6 +21,7 @@ pub use tit_for_tat::TitForTat;
 pub use random::Random;
 pub use pavlov::Pavlov;
 pub use generalized_reciprocity::GeneralizedReciprocity;
+pub use third_party_influence::ThirdPartyInfluence;
 
 /// 戦略の基本トレイト
 pub trait Strategy {
