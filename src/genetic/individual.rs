@@ -1,6 +1,7 @@
 /// 個体の実装
 use anyhow::{Result, ensure};
 use crate::simulation::environment::Choice;
+use crate::strategies::{Strategy, BasicStrategy};
 
 /// 遺伝的アルゴリズムの個体
 #[derive(Debug, Clone)]
@@ -114,6 +115,22 @@ impl Individual {
         
         Ok((child1, child2))
     }
+    
+    /// DNAの指定位置から戦略を取得
+    pub fn get_strategy_from_dna(&self, position: usize) -> Result<Box<dyn Strategy>> {
+        ensure!(position + 1 < self.dna.len(), "DNAの位置が範囲外です");
+        
+        let bits = &self.dna[position..position + 2];
+        let strategy: Box<dyn Strategy> = match bits {
+            "00" => Box::new(BasicStrategy::AlwaysDefect),
+            "01" => Box::new(BasicStrategy::AlwaysCooperate),
+            "10" => Box::new(BasicStrategy::TitForTat),
+            "11" => Box::new(BasicStrategy::Pavlov),
+            _ => anyhow::bail!("無効なDNAパターン: {}", bits),
+        };
+        
+        Ok(strategy)
+    }
 }
 
 #[cfg(test)]
@@ -201,9 +218,17 @@ mod tests {
         // 11: Pavlov
         let individual = Individual::new(1, "00011011".to_string());
         
-        // まだ実装していないのでコンパイルエラーになる
-        // let strategy = individual.get_strategy_from_dna(0)?; // DNA[0:1] = "00"
-        // assert_eq!(strategy.name(), "always-defect");
+        let strategy = individual.get_strategy_from_dna(0)?; // DNA[0:1] = "00"
+        assert_eq!(strategy.name(), "always-defect");
+        
+        let strategy = individual.get_strategy_from_dna(2)?; // DNA[2:3] = "01"
+        assert_eq!(strategy.name(), "always-cooperate");
+        
+        let strategy = individual.get_strategy_from_dna(4)?; // DNA[4:5] = "10"
+        assert_eq!(strategy.name(), "tit-for-tat");
+        
+        let strategy = individual.get_strategy_from_dna(6)?; // DNA[6:7] = "11"
+        assert_eq!(strategy.name(), "pavlov");
         
         Ok(())
     }
