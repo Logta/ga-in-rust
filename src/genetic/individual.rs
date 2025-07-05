@@ -42,18 +42,31 @@ impl Individual {
     }
     
     /// 指定されたラウンドでの選択を決定
-    pub fn choose(&self, _history: &[Choice], round: usize) -> Result<Choice> {
+    pub fn choose(&self, history: &[Choice], round: usize) -> Result<Choice> {
         ensure!(!self.dna.is_empty(), "DNAが空です");
+        ensure!(self.dna.len() >= 2, "DNAは最低2ビット必要です");
         
-        let bit_index = round % self.dna.len();
-        let bit = self.dna.chars().nth(bit_index)
-            .ok_or_else(|| anyhow::anyhow!("DNAの位置{}にアクセスできません", bit_index))?;
+        // DNAの最初の2ビットから戦略を選択
+        let strategy = self.get_strategy_from_dna(0)?;
         
-        match bit {
-            '1' => Ok(Choice::Cooperate),
-            '0' => Ok(Choice::Defect),
-            _ => anyhow::bail!("無効なDNAビット: {}", bit),
-        }
+        // 履歴を(Choice, Choice)のタプル形式に変換
+        // 自分の選択と相手の選択のペア
+        let history_pairs: Vec<(Choice, Choice)> = history.iter()
+            .enumerate()
+            .map(|(i, &opponent_choice)| {
+                // 簡略化のため、自分の前回の選択はDNAから再計算
+                let my_previous_choice = if i == 0 {
+                    Choice::Cooperate // 初回はデフォルトで協力
+                } else {
+                    // 前回の戦略の決定を使用
+                    Choice::Cooperate // TODO: 実際の履歴を保持する必要がある
+                };
+                (my_previous_choice, opponent_choice)
+            })
+            .collect();
+        
+        // 戦略に基づいて選択を決定
+        Ok(strategy.decide(&history_pairs, round))
     }
     
     /// 他の個体とのDNA距離を計算（ハミング距離）
@@ -240,9 +253,25 @@ mod tests {
         let individual = Individual::new(1, "0110".to_string());
         
         // AlwaysCooperateなので常にCooperateを返すはず
-        // まだ実装していないのでコンパイルエラーになる
-        // assert_eq!(individual.choose(&[], 0)?, Choice::Cooperate);
-        // assert_eq!(individual.choose(&[], 1)?, Choice::Cooperate);
+        assert_eq!(individual.choose(&[], 0)?, Choice::Cooperate);
+        assert_eq!(individual.choose(&[], 1)?, Choice::Cooperate);
+        assert_eq!(individual.choose(&[Choice::Defect], 2)?, Choice::Cooperate);
+        
+        Ok(())
+    }
+
+    #[test]
+    fn test_choice_with_different_strategies() -> Result<()> {
+        // AlwaysDefect (00)
+        let individual = Individual::new(1, "0010".to_string());
+        assert_eq!(individual.choose(&[], 0)?, Choice::Defect);
+        assert_eq!(individual.choose(&[Choice::Cooperate], 1)?, Choice::Defect);
+        
+        // TitForTat (10) - 初回は協力、その後は相手の前回の行動を真似る
+        let individual = Individual::new(2, "1010".to_string());
+        assert_eq!(individual.choose(&[], 0)?, Choice::Cooperate);
+        assert_eq!(individual.choose(&[Choice::Defect], 1)?, Choice::Defect);
+        assert_eq!(individual.choose(&[Choice::Defect, Choice::Cooperate], 2)?, Choice::Cooperate);
         
         Ok(())
     }
