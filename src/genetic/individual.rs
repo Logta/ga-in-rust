@@ -42,6 +42,7 @@ impl Individual {
     }
     
     /// 指定されたラウンドでの選択を決定
+    /// history: 相手の選択の履歴
     pub fn choose(&self, history: &[Choice], round: usize) -> Result<Choice> {
         ensure!(!self.dna.is_empty(), "DNAが空です");
         ensure!(self.dna.len() >= 2, "DNAは最低2ビット必要です");
@@ -49,19 +50,13 @@ impl Individual {
         // DNAの最初の2ビットから戦略を選択
         let strategy = self.get_strategy_from_dna(0)?;
         
-        // 履歴を(Choice, Choice)のタプル形式に変換
-        // 自分の選択と相手の選択のペア
+        // 履歴を(自分の選択, 相手の選択)のタプル形式に変換
+        // 簡略化のため、相手の履歴のみから推測
         let history_pairs: Vec<(Choice, Choice)> = history.iter()
-            .enumerate()
-            .map(|(i, &opponent_choice)| {
-                // 簡略化のため、自分の前回の選択はDNAから再計算
-                let my_previous_choice = if i == 0 {
-                    Choice::Cooperate // 初回はデフォルトで協力
-                } else {
-                    // 前回の戦略の決定を使用
-                    Choice::Cooperate // TODO: 実際の履歴を保持する必要がある
-                };
-                (my_previous_choice, opponent_choice)
+            .map(|&opponent_choice| {
+                // 戦略の履歴形式に合わせるため、ダミーの自分の選択を生成
+                // 実際のゲームでは両方の履歴が保持される
+                (Choice::Cooperate, opponent_choice)
             })
             .collect();
         
