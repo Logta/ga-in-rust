@@ -150,6 +150,7 @@ pub fn validate_strategy_settings(config: &Config) -> Result<()> {
     let valid_strategies = [
         "random", "always-cooperate", "always-defect",
         "tit-for-tat", "generous-tft", "pavlov",
+        "generalized-reciprocity",
         "reputation", "image-scoring", "standing"
     ];
     

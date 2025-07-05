@@ -158,6 +158,7 @@ impl Config {
         const BUILTIN_STRATEGIES: &[&str] = &[
             "random", "always-cooperate", "always-defect",
             "tit-for-tat", "generous-tft", "pavlov",
+            "generalized-reciprocity",
             "reputation", "image-scoring", "standing"
         ];
         
