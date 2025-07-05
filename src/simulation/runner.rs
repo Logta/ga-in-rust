@@ -464,7 +464,7 @@ mod tests {
         
         let stats1 = SimulationStats {
             total_generations: 100,
-            final_stats: GenerationStats::new(99, &[10.0, 15.0, 12.0], 0.8, 2, 100).unwrap(),
+            final_stats: GenerationStats::new(99, &[10.0, 15.0, 12.0], 0.8, 2, 100, std::collections::HashMap::new()).unwrap(),
             generation_history: vec![],
             best_individual: BestIndividualInfo {
                 best_fitness: 15.0,

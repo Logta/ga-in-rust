@@ -33,6 +33,9 @@ pub struct GenerationStats {
     
     /// 実行時間（ミリ秒）
     pub elapsed_ms: u64,
+    
+    /// 戦略分布（戦略名: パーセンテージ）
+    pub strategy_distribution: std::collections::HashMap<String, f64>,
 }
 
 impl GenerationStats {
@@ -43,6 +46,7 @@ impl GenerationStats {
         diversity: f64,
         elite_count: usize,
         elapsed_ms: u64,
+        strategy_distribution: std::collections::HashMap<String, f64>,
     ) -> Result<Self> {
         if fitness_values.is_empty() {
             anyhow::bail!("適応度データが空です");
@@ -79,6 +83,7 @@ impl GenerationStats {
             convergence,
             elite_count,
             elapsed_ms,
+            strategy_distribution,
         })
     }
 }
@@ -215,6 +220,14 @@ impl SimulationStats {
 
     /// 統計のサマリーを生成
     pub fn summary(&self) -> String {
+        let mut strategy_summary = String::new();
+        let mut sorted_strategies: Vec<_> = self.final_stats.strategy_distribution.iter().collect();
+        sorted_strategies.sort_by(|a, b| b.1.partial_cmp(a.1).unwrap_or(std::cmp::Ordering::Equal));
+        
+        for (strategy, percentage) in sorted_strategies {
+            strategy_summary.push_str(&format!("   - {}: {:.1}%\n", strategy, percentage));
+        }
+        
         format!(
             "シミュレーション結果サマリー:\n\
              - 総世代数: {}\n\
@@ -223,7 +236,8 @@ impl SimulationStats {
              - 遺伝的多様性: {:.2}%\n\
              - 収束状態: {}\n\
              - 総実行時間: {:.2}秒\n\
-             - 世代あたり平均時間: {:.2}ms",
+             - 世代あたり平均時間: {:.2}ms\n\
+             - 戦略分布:\n{}",
             self.total_generations,
             self.final_stats.avg_fitness,
             self.best_individual.best_fitness,
@@ -231,7 +245,8 @@ impl SimulationStats {
             self.final_stats.diversity * 100.0,
             if self.convergence_info.converged { "収束済み" } else { "未収束" },
             self.performance_info.total_elapsed_ms as f64 / 1000.0,
-            self.performance_info.avg_generation_time_ms
+            self.performance_info.avg_generation_time_ms,
+            strategy_summary
         )
     }
 
@@ -313,7 +328,11 @@ mod tests {
     #[test]
     fn test_generation_stats_creation() {
         let fitness_values = vec![10.0, 20.0, 15.0, 25.0, 12.0];
-        let stats = GenerationStats::new(1, &fitness_values, 0.8, 2, 100).unwrap();
+        let mut strategy_distribution = std::collections::HashMap::new();
+        strategy_distribution.insert("tit-for-tat".to_string(), 60.0);
+        strategy_distribution.insert("always-cooperate".to_string(), 40.0);
+        
+        let stats = GenerationStats::new(1, &fitness_values, 0.8, 2, 100, strategy_distribution).unwrap();
         
         assert_eq!(stats.generation, 1);
         assert_eq!(stats.avg_fitness, 16.4);
@@ -322,20 +341,26 @@ mod tests {
         assert_eq!(stats.diversity, 0.8);
         assert_eq!(stats.elite_count, 2);
         assert_eq!(stats.elapsed_ms, 100);
+        assert!(stats.strategy_distribution.contains_key("tit-for-tat"));
     }
 
     #[test]
     fn test_generation_stats_empty_fitness() {
         let fitness_values = vec![];
-        let result = GenerationStats::new(1, &fitness_values, 0.8, 2, 100);
+        let strategy_distribution = std::collections::HashMap::new();
+        let result = GenerationStats::new(1, &fitness_values, 0.8, 2, 100, strategy_distribution);
         assert!(result.is_err());
     }
 
     #[test]
     fn test_simulation_stats_creation() {
+        let mut strategy_distribution = std::collections::HashMap::new();
+        strategy_distribution.insert("tit-for-tat".to_string(), 50.0);
+        strategy_distribution.insert("always-cooperate".to_string(), 50.0);
+        
         let gen_stats = vec![
-            GenerationStats::new(0, &[10.0, 15.0], 0.9, 1, 50).unwrap(),
-            GenerationStats::new(1, &[15.0, 20.0], 0.8, 1, 60).unwrap(),
+            GenerationStats::new(0, &[10.0, 15.0], 0.9, 1, 50, strategy_distribution.clone()).unwrap(),
+            GenerationStats::new(1, &[15.0, 20.0], 0.8, 1, 60, strategy_distribution).unwrap(),
         ];
         
         let best_individual = BestIndividualInfo {
@@ -369,9 +394,10 @@ mod tests {
     fn test_improvement_trend_analysis() {
         // 改善傾向のテストケースを作成
         let mut gen_history = Vec::new();
+        let strategy_distribution = std::collections::HashMap::new();
         for i in 0..20 {
             let fitness = vec![10.0 + i as f64, 15.0 + i as f64]; // 徐々に改善
-            gen_history.push(GenerationStats::new(i, &fitness, 0.5, 1, 50).unwrap());
+            gen_history.push(GenerationStats::new(i, &fitness, 0.5, 1, 50, strategy_distribution.clone()).unwrap());
         }
         
         let best_individual = BestIndividualInfo {
@@ -401,9 +427,10 @@ mod tests {
 
     #[test]
     fn test_diversity_trend_analysis() {
+        let strategy_distribution = std::collections::HashMap::new();
         let gen_stats = vec![
-            GenerationStats::new(0, &[10.0, 15.0], 0.8, 1, 50).unwrap(),
-            GenerationStats::new(1, &[15.0, 20.0], 0.9, 1, 60).unwrap(),
+            GenerationStats::new(0, &[10.0, 15.0], 0.8, 1, 50, strategy_distribution.clone()).unwrap(),
+            GenerationStats::new(1, &[15.0, 20.0], 0.9, 1, 60, strategy_distribution).unwrap(),
         ];
         
         let best_individual = BestIndividualInfo {
@@ -434,8 +461,11 @@ mod tests {
 
     #[test]
     fn test_summary_generation() {
+        let mut strategy_distribution = std::collections::HashMap::new();
+        strategy_distribution.insert("tit-for-tat".to_string(), 70.0);
+        strategy_distribution.insert("always-cooperate".to_string(), 30.0);
         let gen_stats = vec![
-            GenerationStats::new(0, &[10.0, 15.0], 0.9, 1, 1000).unwrap(),
+            GenerationStats::new(0, &[10.0, 15.0], 0.9, 1, 1000, strategy_distribution).unwrap(),
         ];
         
         let best_individual = BestIndividualInfo {

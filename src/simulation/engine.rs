@@ -263,8 +263,9 @@ impl Simulation {
 
         let diversity = self.calculate_diversity()?;
         let elite_count = self.config.genetic.elite_count;
+        let strategy_distribution = self.genetic_algorithm.population().strategy_distribution_percentage()?;
 
-        GenerationStats::new(generation, &fitness_values, diversity, elite_count, elapsed_ms)
+        GenerationStats::new(generation, &fitness_values, diversity, elite_count, elapsed_ms, strategy_distribution)
             .context("世代統計の作成に失敗しました")
     }
 

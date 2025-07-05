@@ -209,6 +209,32 @@ impl Population {
         self.individuals = new_individuals;
         Ok(())
     }
+    
+    /// 戦略分布を計算（戦略名: 個体数のマップ）
+    pub fn strategy_distribution(&self) -> Result<std::collections::HashMap<String, usize>> {
+        let mut distribution = std::collections::HashMap::new();
+        
+        for individual in &self.individuals {
+            let strategy_name = individual.get_strategy_name()?;
+            *distribution.entry(strategy_name).or_insert(0) += 1;
+        }
+        
+        Ok(distribution)
+    }
+    
+    /// 戦略分布をパーセンテージで計算
+    pub fn strategy_distribution_percentage(&self) -> Result<std::collections::HashMap<String, f64>> {
+        let distribution = self.strategy_distribution()?;
+        let total = self.size() as f64;
+        
+        let mut percentage_distribution = std::collections::HashMap::new();
+        for (strategy, count) in distribution {
+            let percentage = (count as f64 / total) * 100.0;
+            percentage_distribution.insert(strategy, percentage);
+        }
+        
+        Ok(percentage_distribution)
+    }
 }
 
 /// ランダムなDNA文字列を生成

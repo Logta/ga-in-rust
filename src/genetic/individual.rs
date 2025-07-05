@@ -152,6 +152,12 @@ impl Individual {
         
         Ok(strategy)
     }
+    
+    /// 個体の戦略名を取得
+    pub fn get_strategy_name(&self) -> Result<String> {
+        let strategy = self.get_strategy_from_dna(0)?;
+        Ok(strategy.name().to_string())
+    }
 }
 
 #[cfg(test)]
