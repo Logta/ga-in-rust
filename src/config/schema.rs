@@ -353,6 +353,18 @@ pub struct PayoffMatrix {
 }
 
 impl PayoffMatrix {
+    /// 新しいペイオフ行列を作成
+    pub fn new(reward: i32, temptation: i32, sucker: i32, punishment: i32) -> Result<Self> {
+        let matrix = Self {
+            reward,
+            temptation,
+            sucker,
+            punishment,
+        };
+        matrix.validate()?;
+        Ok(matrix)
+    }
+
     /// 2つの選択に基づいてペイオフを計算
     pub fn payoff(&self, player1_choice: crate::simulation::environment::Choice, player2_choice: crate::simulation::environment::Choice) -> (i32, i32) {
         use crate::simulation::environment::Choice;
@@ -371,6 +383,26 @@ impl PayoffMatrix {
             temptation: 5,  // 裏切り成功: 高い報酬
             sucker: 0,      // 裏切られ: 報酬なし
             punishment: 1,  // 両者裏切り: 低い報酬
+        }
+    }
+
+    /// 協力的なペイオフ行列を作成（協力が有利）
+    pub fn cooperative() -> Self {
+        Self {
+            reward: 4,      // 両者協力: 高い報酬
+            temptation: 5,  // 裏切り成功: やや高い報酬
+            sucker: 1,      // 裏切られ: 低い報酬
+            punishment: 2,  // 両者裏切り: 中程度の報酬
+        }
+    }
+
+    /// 競争的なペイオフ行列を作成（裏切りが有利）
+    pub fn competitive() -> Self {
+        Self {
+            reward: 2,      // 両者協力: 低い報酬
+            temptation: 3,  // 裏切り成功: 高い報酬
+            sucker: 0,      // 裏切られ: 報酬なし
+            punishment: 1,  // 両者裏切り: 最低報酬
         }
     }
 
@@ -412,7 +444,7 @@ impl PayoffMatrix {
             "ペイオフ行列:\n\
              相手    協力  裏切り\n\
              自分 協力  {:2}    {:2}\n\
-             　　 裏切り {:2}    {:2}\n\
+                  裏切り {:2}    {:2}\n\
              \n\
              R(報酬)={}, T(誘惑)={}, S(愚か者)={}, P(処罰)={}",
             self.reward, self.sucker,

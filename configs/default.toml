@@ -21,7 +21,7 @@ dna_length = 8
 crossover_type = "single-point"  # "single-point", "two-point", "uniform"
 
 # 選択方式 - 親個体の選択方法
-selection_method = { type = "tournament", size = 3 }  # tournament, roulette, rank
+selection_method = { type = "roulette" }  # tournament, roulette, rank
 
 [simulation]
 # 1試合あたりのラウンド数
