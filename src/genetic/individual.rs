@@ -232,4 +232,18 @@ mod tests {
         
         Ok(())
     }
+
+    #[test]
+    fn test_choice_with_strategy() -> Result<()> {
+        // 戦略を使った選択のテスト
+        // DNA: "0110" - 最初の2ビット"01"はAlwaysCooperate
+        let individual = Individual::new(1, "0110".to_string());
+        
+        // AlwaysCooperateなので常にCooperateを返すはず
+        // まだ実装していないのでコンパイルエラーになる
+        // assert_eq!(individual.choose(&[], 0)?, Choice::Cooperate);
+        // assert_eq!(individual.choose(&[], 1)?, Choice::Cooperate);
+        
+        Ok(())
+    }
 }
