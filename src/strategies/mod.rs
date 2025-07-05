@@ -50,6 +50,8 @@ pub enum BasicStrategy {
     Pavlov,
     /// 一般化互恵戦略
     GeneralizedReciprocity,
+    /// 第三者影響戦略
+    ThirdPartyInfluence,
 }
 
 impl Strategy for BasicStrategy {
@@ -61,6 +63,7 @@ impl Strategy for BasicStrategy {
             BasicStrategy::Random => "random",
             BasicStrategy::Pavlov => "pavlov",
             BasicStrategy::GeneralizedReciprocity => "generalized-reciprocity",
+            BasicStrategy::ThirdPartyInfluence => "third-party-influence",
         }
     }
     
@@ -72,6 +75,7 @@ impl Strategy for BasicStrategy {
             BasicStrategy::Random => "ランダムに行動を選択する戦略",
             BasicStrategy::Pavlov => "勝てば続ける、負ければ変える戦略",
             BasicStrategy::GeneralizedReciprocity => "グループ全体への貢献と恩恵を考慮する一般化互恵戦略",
+            BasicStrategy::ThirdPartyInfluence => "第三者からの評判情報と社会的圧力を考慮する戦略",
         }
     }
     
@@ -83,6 +87,7 @@ impl Strategy for BasicStrategy {
             BasicStrategy::Random => Random.decide(history, round),
             BasicStrategy::Pavlov => Pavlov.decide(history, round),
             BasicStrategy::GeneralizedReciprocity => GeneralizedReciprocity::default().decide(history, round),
+            BasicStrategy::ThirdPartyInfluence => ThirdPartyInfluence::default().decide(history, round),
         }
     }
 }
@@ -100,6 +105,7 @@ impl StrategySelector {
             BasicStrategy::Random,
             BasicStrategy::Pavlov,
             BasicStrategy::GeneralizedReciprocity,
+            BasicStrategy::ThirdPartyInfluence,
         ]
     }
     

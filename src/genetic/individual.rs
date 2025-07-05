@@ -45,9 +45,9 @@ impl Individual {
     /// history: 相手の選択の履歴
     pub fn choose(&self, history: &[Choice], round: usize) -> Result<Choice> {
         ensure!(!self.dna.is_empty(), "DNAが空です");
-        ensure!(self.dna.len() >= 3, "DNAは最低3ビット必要です");
+        ensure!(self.dna.len() >= 4, "DNAは最低4ビット必要です");
         
-        // DNAの最初の3ビットから戦略を選択
+        // DNAの最初の4ビットから戦略を選択
         let strategy = self.get_strategy_from_dna(0)?;
         
         // 履歴を(自分の選択, 相手の選択)のタプル形式に変換
@@ -126,19 +126,27 @@ impl Individual {
     
     /// DNAの指定位置から戦略を取得
     pub fn get_strategy_from_dna(&self, position: usize) -> Result<Box<dyn Strategy>> {
-        ensure!(position + 2 < self.dna.len(), "DNAの位置が範囲外です");
+        ensure!(position + 3 < self.dna.len(), "DNAの位置が範囲外です");
         
-        let bits = &self.dna[position..position + 3];
+        let bits = &self.dna[position..position + 4];
         let strategy: Box<dyn Strategy> = match bits {
-            "000" => Box::new(BasicStrategy::AlwaysDefect),
-            "001" => Box::new(BasicStrategy::AlwaysCooperate),
-            "010" => Box::new(BasicStrategy::TitForTat),
-            "011" => Box::new(BasicStrategy::Pavlov),
-            "100" => Box::new(BasicStrategy::GeneralizedReciprocity),
-            "101" => Box::new(BasicStrategy::Random),  // Random を移動
-            // 予備（110, 111は将来の拡張用）
-            "110" => Box::new(BasicStrategy::AlwaysCooperate), // デフォルト
-            "111" => Box::new(BasicStrategy::AlwaysCooperate), // デフォルト
+            "0000" => Box::new(BasicStrategy::AlwaysDefect),
+            "0001" => Box::new(BasicStrategy::AlwaysCooperate),
+            "0010" => Box::new(BasicStrategy::TitForTat),
+            "0011" => Box::new(BasicStrategy::Pavlov),
+            "0100" => Box::new(BasicStrategy::GeneralizedReciprocity),
+            "0101" => Box::new(BasicStrategy::Random),
+            "0110" => Box::new(BasicStrategy::ThirdPartyInfluence),
+            // 予備（0111-1111は将来の拡張用、今はデフォルト戦略を使用）
+            "0111" => Box::new(BasicStrategy::AlwaysCooperate), // デフォルト
+            "1000" => Box::new(BasicStrategy::TitForTat), // デフォルト
+            "1001" => Box::new(BasicStrategy::Pavlov), // デフォルト
+            "1010" => Box::new(BasicStrategy::Random), // デフォルト
+            "1011" => Box::new(BasicStrategy::GeneralizedReciprocity), // デフォルト
+            "1100" => Box::new(BasicStrategy::ThirdPartyInfluence), // デフォルト
+            "1101" => Box::new(BasicStrategy::AlwaysCooperate), // デフォルト
+            "1110" => Box::new(BasicStrategy::TitForTat), // デフォルト
+            "1111" => Box::new(BasicStrategy::AlwaysDefect), // デフォルト
             _ => anyhow::bail!("無効なDNAパターン: {}", bits),
         };
         
@@ -167,9 +175,9 @@ mod tests {
 
     #[test]
     fn test_choice() -> Result<()> {
-        // 新しい仕様: 最初の3ビットが戦略を決定
-        // "010..." -> TitForTat戦略
-        let individual = Individual::new(1, "010101".to_string());
+        // 新しい仕様: 最初の4ビットが戦略を決定
+        // "0010..." -> TitForTat戦略
+        let individual = Individual::new(1, "00101010".to_string());
         
         // TitForTat: 初回は協力
         let choice = individual.choose(&[], 0)?;
@@ -226,32 +234,36 @@ mod tests {
 
     #[test]
     fn test_dna_to_strategy_mapping() -> Result<()> {
-        // DNAビットパターンから戦略を選択するテスト（3ビット版）
-        // 000: AlwaysDefect
-        // 001: AlwaysCooperate  
-        // 010: TitForTat
-        // 011: Pavlov
-        // 100: GeneralizedReciprocity
-        // 101: Random
-        let individual = Individual::new(1, "000001010011100101".to_string());
+        // DNAビットパターンから戦略を選択するテスト（4ビット版）
+        // 0000: AlwaysDefect
+        // 0001: AlwaysCooperate  
+        // 0010: TitForTat
+        // 0011: Pavlov
+        // 0100: GeneralizedReciprocity
+        // 0101: Random
+        // 0110: ThirdPartyInfluence
+        let individual = Individual::new(1, "000000010010001101000101011000000000".to_string());
         
-        let strategy = individual.get_strategy_from_dna(0)?; // DNA[0:2] = "000"
+        let strategy = individual.get_strategy_from_dna(0)?; // DNA[0:3] = "0000"
         assert_eq!(strategy.name(), "always-defect");
         
-        let strategy = individual.get_strategy_from_dna(3)?; // DNA[3:5] = "001"
+        let strategy = individual.get_strategy_from_dna(4)?; // DNA[4:7] = "0001"
         assert_eq!(strategy.name(), "always-cooperate");
         
-        let strategy = individual.get_strategy_from_dna(6)?; // DNA[6:8] = "010"
+        let strategy = individual.get_strategy_from_dna(8)?; // DNA[8:11] = "0010"
         assert_eq!(strategy.name(), "tit-for-tat");
         
-        let strategy = individual.get_strategy_from_dna(9)?; // DNA[9:11] = "011"
+        let strategy = individual.get_strategy_from_dna(12)?; // DNA[12:15] = "0011"
         assert_eq!(strategy.name(), "pavlov");
         
-        let strategy = individual.get_strategy_from_dna(12)?; // DNA[12:14] = "100"
+        let strategy = individual.get_strategy_from_dna(16)?; // DNA[16:19] = "0100"
         assert_eq!(strategy.name(), "generalized-reciprocity");
         
-        let strategy = individual.get_strategy_from_dna(15)?; // DNA[15:17] = "101"
+        let strategy = individual.get_strategy_from_dna(20)?; // DNA[20:23] = "0101"
         assert_eq!(strategy.name(), "random");
+        
+        let strategy = individual.get_strategy_from_dna(24)?; // DNA[24:27] = "0110"
+        assert_eq!(strategy.name(), "third-party-influence");
         
         Ok(())
     }
@@ -259,8 +271,8 @@ mod tests {
     #[test]
     fn test_choice_with_strategy() -> Result<()> {
         // 戦略を使った選択のテスト
-        // DNA: "001110" - 最初の3ビット"001"はAlwaysCooperate
-        let individual = Individual::new(1, "001110".to_string());
+        // DNA: "00011010" - 最初の4ビット"0001"はAlwaysCooperate
+        let individual = Individual::new(1, "00011010".to_string());
         
         // AlwaysCooperateなので常にCooperateを返すはず
         assert_eq!(individual.choose(&[], 0)?, Choice::Cooperate);
@@ -272,13 +284,13 @@ mod tests {
 
     #[test]
     fn test_choice_with_different_strategies() -> Result<()> {
-        // AlwaysDefect (000)
-        let individual = Individual::new(1, "00010".to_string());
+        // AlwaysDefect (0000)
+        let individual = Individual::new(1, "000010000".to_string());
         assert_eq!(individual.choose(&[], 0)?, Choice::Defect);
         assert_eq!(individual.choose(&[Choice::Cooperate], 1)?, Choice::Defect);
         
-        // TitForTat (010) - 初回は協力、その後は相手の前回の行動を真似る
-        let individual = Individual::new(2, "01010".to_string());
+        // TitForTat (0010) - 初回は協力、その後は相手の前回の行動を真似る
+        let individual = Individual::new(2, "001010000".to_string());
         assert_eq!(individual.choose(&[], 0)?, Choice::Cooperate);
         assert_eq!(individual.choose(&[Choice::Defect], 1)?, Choice::Defect);
         assert_eq!(individual.choose(&[Choice::Defect, Choice::Cooperate], 2)?, Choice::Cooperate);
