@@ -349,8 +349,8 @@ fn bench_random_generation(c: &mut Criterion) {
     
     let mut group = c.benchmark_group("random_generation");
     
-    // SFMT乱数生成器の性能測定
-    group.bench_function("sfmt_f64", |b| {
+    // メルセンヌツイスタ乱数生成器の性能測定
+    group.bench_function("mersenne_twister_f64", |b| {
         let rng = RandomGenerator::new(Some(42));
         b.iter(|| {
             for _ in 0..1000 {
@@ -359,7 +359,7 @@ fn bench_random_generation(c: &mut Criterion) {
         })
     });
     
-    group.bench_function("sfmt_range", |b| {
+    group.bench_function("mersenne_twister_range", |b| {
         let rng = RandomGenerator::new(Some(42));
         b.iter(|| {
             for _ in 0..1000 {
@@ -368,7 +368,7 @@ fn bench_random_generation(c: &mut Criterion) {
         })
     });
     
-    group.bench_function("sfmt_bool", |b| {
+    group.bench_function("mersenne_twister_bool", |b| {
         let rng = RandomGenerator::new(Some(42));
         b.iter(|| {
             for _ in 0..1000 {
@@ -377,7 +377,7 @@ fn bench_random_generation(c: &mut Criterion) {
         })
     });
     
-    group.bench_function("sfmt_normal", |b| {
+    group.bench_function("mersenne_twister_normal", |b| {
         let rng = RandomGenerator::new(Some(42));
         b.iter(|| {
             for _ in 0..1000 {

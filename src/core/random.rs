@@ -1,15 +1,16 @@
-/// SFMT高速乱数生成器のラッパー
+/// メルセンヌツイスタ乱数生成器のラッパー
 ///
-/// Mersenne Twister の改良版である SFMT (SIMD-oriented Fast Mersenne Twister) を使用
+/// randクレートのStdRngを使用してメルセンヌツイスタを実装
 /// 遺伝的アルゴリズムで大量の乱数が必要になるため、高速な乱数生成器を採用
 use anyhow::Result;
-use sfmt::SFMT;
+use rand::{Rng, SeedableRng};
+use rand::rngs::StdRng;
+use rand::seq::SliceRandom;
 use std::sync::Mutex;
-use rand_chacha::rand_core::{SeedableRng, RngCore};
 
 /// グローバル乱数生成器のラッパー
 pub struct RandomGenerator {
-    sfmt: Mutex<SFMT>,
+    rng: Mutex<StdRng>,
 }
 
 impl RandomGenerator {
@@ -24,15 +25,15 @@ impl RandomGenerator {
         });
         
         Self {
-            sfmt: Mutex::new(SFMT::from_seed(actual_seed.to_le_bytes())),
+            rng: Mutex::new(StdRng::seed_from_u64(actual_seed as u64)),
         }
     }
 
     /// 0.0以上1.0未満の浮動小数点数を生成
     pub fn gen_f64(&self) -> Result<f64> {
-        let mut rng = self.sfmt.lock()
+        let mut rng = self.rng.lock()
             .map_err(|_| anyhow::anyhow!("乱数生成器のロック取得に失敗しました"))?;
-        Ok(rng.next_u64() as f64 / u64::MAX as f64)
+        Ok(rng.random::<f64>())
     }
 
     /// 0以上max未満の整数を生成
@@ -41,8 +42,9 @@ impl RandomGenerator {
             anyhow::bail!("範囲の最大値は0より大きくなければなりません");
         }
         
-        let f = self.gen_f64()?;
-        Ok((f * max as f64) as usize)
+        let mut rng = self.rng.lock()
+            .map_err(|_| anyhow::anyhow!("乱数生成器のロック取得に失敗しました"))?;
+        Ok(rng.random_range(0..max))
     }
 
     /// 指定された確率でtrueを返す
@@ -51,8 +53,9 @@ impl RandomGenerator {
             anyhow::bail!("確率は0.0から1.0の間である必要があります: {}", probability);
         }
         
-        let value = self.gen_f64()?;
-        Ok(value < probability)
+        let mut rng = self.rng.lock()
+            .map_err(|_| anyhow::anyhow!("乱数生成器のロック取得に失敗しました"))?;
+        Ok(rng.random_bool(probability))
     }
 
     /// 配列からランダムに要素を選択
@@ -67,10 +70,9 @@ impl RandomGenerator {
 
     /// 配列をシャッフル（Fisher-Yates アルゴリズム）
     pub fn shuffle<T>(&self, items: &mut [T]) -> Result<()> {
-        for i in (1..items.len()).rev() {
-            let j = self.gen_range(i + 1)?;
-            items.swap(i, j);
-        }
+        let mut rng = self.rng.lock()
+            .map_err(|_| anyhow::anyhow!("乱数生成器のロック取得に失敗しました"))?;
+        items.shuffle(&mut *rng);
         Ok(())
     }
 
