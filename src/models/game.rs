@@ -77,8 +77,8 @@ where
             for j in (i + 1)..self.agents.len() {
                 let (updated_i, updated_j) =
                     self.strategy.play_match(&*self.agents[i], &*self.agents[j]);
-                self.agents[i] = Box::new(updated_i);
-                self.agents[j] = Box::new(updated_j);
+                *self.agents[i] = updated_i;
+                *self.agents[j] = updated_j;
             }
         }
     }
