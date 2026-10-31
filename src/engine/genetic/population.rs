@@ -3,7 +3,7 @@
 /// このモジュールでは、遺伝的アルゴリズムにおける個体群（Population）の管理を行います。
 /// 個体群は複数のエージェント（個体）から構成され、世代を重ねて進化していきます。
 use crate::core::{errors::*, traits::*, types::*};
-use rand::{thread_rng, Rng};
+use rand::{rng, Rng, RngExt};
 
 /// 遺伝的アルゴリズムの個体群を管理する構造体
 ///
@@ -68,7 +68,7 @@ impl<T: Agent> Population<T> {
         crate::core::errors::validation::validate_elite_size(elite_size, size)?;
 
         let mut agents = Vec::with_capacity(size);
-        let mut rng = thread_rng();
+        let mut rng = rng();
 
         for id in 0..size {
             let dna = Self::generate_random_dna(dna_length, &mut rng);
@@ -84,7 +84,7 @@ impl<T: Agent> Population<T> {
 
     fn generate_random_dna<R: Rng>(length: usize, rng: &mut R) -> Dna {
         (0..length)
-            .map(|_| if rng.gen_bool(0.5) { '1' } else { '0' })
+            .map(|_| if rng.random_bool(0.5) { '1' } else { '0' })
             .collect()
     }
 
@@ -275,12 +275,12 @@ mod tests {
         }
 
         fn mutate(&self, rate: MutationRate) -> Self {
-            let mut rng = thread_rng();
+            let mut rng = rng();
             let new_dna: String = self
                 .dna
                 .chars()
                 .map(|c| {
-                    if rng.gen::<f64>() < rate {
+                    if rng.random::<f64>() < rate {
                         if c == '0' {
                             '1'
                         } else {

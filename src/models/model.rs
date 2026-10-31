@@ -1,5 +1,5 @@
 use core::num::ParseIntError;
-use rand::Rng;
+use rand::RngExt;
 
 pub type Dna = String;
 pub type AgentId = u64;
@@ -103,8 +103,8 @@ impl Model for Agent {
 }
 
 fn mutate_bit(bit: char, mutation_rate: f64) -> char {
-    let mut rng = rand::thread_rng();
-    if rng.gen::<f64>() < mutation_rate {
+    let mut rng = rand::rng();
+    if rng.random::<f64>() < mutation_rate {
         match bit {
             '0' => '1',
             '1' => '0',

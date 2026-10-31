@@ -1,7 +1,7 @@
 use super::model::{BaseModel, Model, Points};
 use crate::ga::algorithm::GA;
 use crate::strategies::utils::StrategyOperation;
-use rand::{thread_rng, Rng};
+use rand::{rng, RngExt};
 
 pub trait GameOperation<T, U>
 where
@@ -132,9 +132,9 @@ where
 }
 
 fn generate_random_dna(length: usize) -> String {
-    let mut rng = thread_rng();
+    let mut rng = rng();
     (0..length)
-        .map(|_| if rng.gen_bool(0.5) { '1' } else { '0' })
+        .map(|_| if rng.random_bool(0.5) { '1' } else { '0' })
         .collect()
 }
 

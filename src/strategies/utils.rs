@@ -1,5 +1,5 @@
 use crate::models::model::{BaseModel, Model};
-use rand::Rng;
+use rand::RngExt;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Choice {
@@ -95,10 +95,10 @@ fn get_probabilistic_choice(ones_count: u64, dna_length: usize) -> Choice {
         return Choice::Defect;
     }
 
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let cooperation_probability = ones_count as f64 / dna_length as f64;
 
-    if rng.gen::<f64>() < cooperation_probability {
+    if rng.random::<f64>() < cooperation_probability {
         Choice::Cooperate
     } else {
         Choice::Defect

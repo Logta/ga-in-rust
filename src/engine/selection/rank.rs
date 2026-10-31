@@ -1,6 +1,6 @@
 #[allow(unused_imports)]
 use crate::core::{errors::*, traits::*, types::*};
-use rand::{thread_rng, Rng};
+use rand::{rng, RngExt};
 
 /// Rank-based selection strategy
 #[derive(Debug, Clone)]
@@ -51,9 +51,9 @@ impl RankSelection {
         }
 
         let probabilities = self.calculate_rank_probabilities(sorted_population.len());
-        let mut rng = thread_rng();
+        let mut rng = rng();
         let mut cumulative_prob = 0.0;
-        let random_value: f64 = rng.gen();
+        let random_value: f64 = rng.random();
 
         for (i, &prob) in probabilities.iter().enumerate() {
             cumulative_prob += prob;
