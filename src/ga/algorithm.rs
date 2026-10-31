@@ -1,6 +1,6 @@
 use crate::models::model::{AgentId, BaseModel, Dna, Model, Points};
 use crate::strategies::utils::StrategyOperation;
-use rand::{thread_rng, Rng};
+use rand::{rng, RngExt};
 
 use crate::models::game;
 use crate::models::game::Game;
@@ -65,8 +65,8 @@ fn generate_offspring_dna<T: Model>(
 ) -> Dna {
     let (parent1, parent2) = select_parents(agents, population);
 
-    let mut rng = thread_rng();
-    let cross_point = rng.gen_range(0..parent1.get_dna_length());
+    let mut rng = rng();
+    let cross_point = rng.random_range(0..parent1.get_dna_length());
 
     let offspring = parent1.crossover(&parent2, cross_point);
     offspring
@@ -95,8 +95,8 @@ fn roulette_wheel_selection<T: BaseModel>(
     _population: usize,
     fitness_sum: u64,
 ) -> T {
-    let mut rng = thread_rng();
-    let mut selection_point = rng.gen_range(0..fitness_sum) as i64;
+    let mut rng = rng();
+    let mut selection_point = rng.random_range(0..fitness_sum) as i64;
 
     for agent in agents {
         let fitness = agent.get_points();

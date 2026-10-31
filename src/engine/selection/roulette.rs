@@ -4,7 +4,7 @@
 /// 適応度が高い個体ほど選択される確率が高くなりますが、適応度の低い個体にも
 /// 選択される可能性を残すことで、多様性を保持します。
 use crate::core::{errors::*, traits::*, types::*};
-use rand::{thread_rng, Rng};
+use rand::{rng, RngExt};
 
 /// ルーレット選択戦略の実装構造体
 ///
@@ -79,13 +79,13 @@ impl RouletteSelection {
 
         if total_fitness == 0 {
             // If all fitness is 0, select randomly
-            let mut rng = thread_rng();
-            let index = rng.gen_range(0..population.len());
+            let mut rng = rng();
+            let index = rng.random_range(0..population.len());
             return Ok(population[index].clone());
         }
 
-        let mut rng = thread_rng();
-        let mut selection_point = rng.gen_range(0..total_fitness) as i64;
+        let mut rng = rng();
+        let mut selection_point = rng.random_range(0..total_fitness) as i64;
 
         for agent in population {
             let fitness = self.calculate_fitness(agent.points());

@@ -1,5 +1,5 @@
 use crate::core::{errors::*, traits::*, types::*};
-use rand::{thread_rng, Rng};
+use rand::{rng, RngExt};
 
 /// Single-point crossover operation
 #[derive(Debug, Clone, PartialEq)]
@@ -24,8 +24,8 @@ impl SinglePointCrossover {
             return Err(GAError::InvalidDnaLength(0));
         }
 
-        let mut rng = thread_rng();
-        let crossover_point = rng.gen_range(1..dna1.len()); // 1 to len-1
+        let mut rng = rng();
+        let crossover_point = rng.random_range(1..dna1.len()); // 1 to len-1
 
         self.crossover_at_point(parent1, parent2, crossover_point)
     }
