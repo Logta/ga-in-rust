@@ -5,7 +5,7 @@
 /// 実装が簡単で効率的な選択手法として広く使用されています。
 #[allow(unused_imports)]
 use crate::core::{errors::*, traits::*, types::*};
-use rand::{thread_rng, Rng};
+use rand::{rng, RngExt};
 
 /// トーナメント選択戦略の実装構造体
 ///
@@ -71,13 +71,13 @@ impl TournamentSelection {
         }
 
         let tournament_size = self.tournament_size.min(population.len());
-        let mut rng = thread_rng();
+        let mut rng = rng();
 
         let mut best_agent = None;
         let mut best_fitness = 0;
 
         for _ in 0..tournament_size {
-            let index = rng.gen_range(0..population.len());
+            let index = rng.random_range(0..population.len());
             let candidate = &population[index];
             let fitness = candidate.fitness();
 

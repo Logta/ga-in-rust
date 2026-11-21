@@ -1,7 +1,7 @@
 use super::model::{BaseModel, Model, Points};
 use crate::ga::algorithm::GA;
 use crate::strategies::utils::StrategyOperation;
-use rand::{thread_rng, Rng};
+use rand::{rng, RngExt};
 
 pub trait GameOperation<T, U>
 where
@@ -77,8 +77,8 @@ where
             for j in (i + 1)..self.agents.len() {
                 let (updated_i, updated_j) =
                     self.strategy.play_match(&*self.agents[i], &*self.agents[j]);
-                self.agents[i] = Box::new(updated_i);
-                self.agents[j] = Box::new(updated_j);
+                *self.agents[i] = updated_i;
+                *self.agents[j] = updated_j;
             }
         }
     }
@@ -132,9 +132,9 @@ where
 }
 
 fn generate_random_dna(length: usize) -> String {
-    let mut rng = thread_rng();
+    let mut rng = rng();
     (0..length)
-        .map(|_| if rng.gen_bool(0.5) { '1' } else { '0' })
+        .map(|_| if rng.random_bool(0.5) { '1' } else { '0' })
         .collect()
 }
 
